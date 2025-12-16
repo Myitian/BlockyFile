@@ -168,7 +168,7 @@ public final class BlockyFile {
                 .then(argument.argument("pos1", BlockPosArgumentEx.blockPos())
                     .then(argument.argument("pos2", BlockPosArgumentEx.blockPos())
                         .then(argument.argument("axisOrder", new CustomArgument<>(AxisOrder::parse, AxisOrder.VALUES))
-                            .then(argument.argument("file", StringArgumentType.greedyString())
+                            .then(argument.argument("filename", StringArgumentType.greedyString())
                                 .executes(context -> {
                                     S source = context.getSource();
                                     Level world = getWorld.apply(source);
@@ -177,7 +177,7 @@ public final class BlockyFile {
                                         BlockPosArgumentEx.getInWorldBlockPos(context, world, "pos1"),
                                         BlockPosArgumentEx.getInWorldBlockPos(context, world, "pos2"),
                                         context.getArgument("axisOrder", AxisOrder.class),
-                                        StringArgumentType.getString(context, "file"),
+                                        StringArgumentType.getString(context, "filename"),
                                         getFeedbackWrapper.apply(source),
                                         Minecraft.getInstance().player);
                                 }))))))
@@ -216,10 +216,10 @@ public final class BlockyFile {
                             return Command.SINGLE_SUCCESS;
                         }))
                     .then(literal.literal("file")
-                        .then(argument.argument("file", StringArgumentType.greedyString())
+                        .then(argument.argument("filename", StringArgumentType.greedyString())
                             .executes(context -> {
                                 CommandFeedback feedback = getFeedbackWrapper.apply(context.getSource());
-                                String file = StringArgumentType.getString(context, "file");
+                                String file = StringArgumentType.getString(context, "filename");
                                 Path p = Path.of(file);
                                 switch (context.getArgument("mode", PaletteOperationMode.class)) {
                                     case IMPORT -> {

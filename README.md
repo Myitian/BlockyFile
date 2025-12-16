@@ -2,7 +2,7 @@
 
 A client-side mod that uses blocks to store files in the Minecraft world. Supports Minecraft 1.21.4~1.21.11, Fabric/NeoForge/Forge.
 
-In-game configuration is supported when Cloth-Config is installed.
+In-game configuration is supported when Cloth Config is installed.
 
 ## Thanks
 
