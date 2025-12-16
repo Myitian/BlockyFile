@@ -1,0 +1,368 @@
+package net.myitian.blockyfile.config;
+
+import com.google.gson.stream.JsonReader;
+import com.google.gson.stream.JsonWriter;
+import net.myitian.blockyfile.BlockyFile;
+import org.apache.commons.lang3.tuple.Pair;
+
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+public final class Config {
+    private static final ConfigCodec CODEC = new ConfigCodec();
+
+    private static final List<String> defaultPalette = List.of(
+        "minecraft:oak_log",
+        "minecraft:spruce_log",
+        "minecraft:birch_log",
+        "minecraft:jungle_log",
+        "minecraft:acacia_log",
+        "minecraft:dark_oak_log",
+        "minecraft:mangrove_log",
+        "minecraft:cherry_log",
+        "minecraft:pale_oak_log",
+        "minecraft:crimson_stem",
+        "minecraft:warped_stem",
+        "minecraft:bamboo_block",
+        "minecraft:sandstone",
+        "minecraft:chiseled_sandstone",
+        "minecraft:smooth_sandstone",
+        "minecraft:cut_sandstone",
+        "minecraft:stripped_oak_log",
+        "minecraft:stripped_spruce_log",
+        "minecraft:stripped_birch_log",
+        "minecraft:stripped_jungle_log",
+        "minecraft:stripped_acacia_log",
+        "minecraft:stripped_dark_oak_log",
+        "minecraft:stripped_mangrove_log",
+        "minecraft:stripped_cherry_log",
+        "minecraft:stripped_pale_oak_log",
+        "minecraft:stripped_crimson_stem",
+        "minecraft:stripped_warped_stem",
+        "minecraft:stripped_bamboo_block",
+        "minecraft:red_sandstone",
+        "minecraft:chiseled_red_sandstone",
+        "minecraft:smooth_red_sandstone",
+        "minecraft:cut_red_sandstone",
+        "minecraft:oak_planks",
+        "minecraft:spruce_planks",
+        "minecraft:birch_planks",
+        "minecraft:jungle_planks",
+        "minecraft:acacia_planks",
+        "minecraft:dark_oak_planks",
+        "minecraft:mangrove_planks",
+        "minecraft:cherry_planks",
+        "minecraft:pale_oak_planks",
+        "minecraft:crimson_planks",
+        "minecraft:warped_planks",
+        "minecraft:bamboo_planks",
+        "minecraft:tuff",
+        "minecraft:chiseled_tuff",
+        "minecraft:polished_tuff",
+        "minecraft:tuff_bricks",
+        "minecraft:stripped_oak_wood",
+        "minecraft:stripped_spruce_wood",
+        "minecraft:stripped_birch_wood",
+        "minecraft:stripped_jungle_wood",
+        "minecraft:stripped_acacia_wood",
+        "minecraft:stripped_dark_oak_wood",
+        "minecraft:stripped_mangrove_wood",
+        "minecraft:stripped_cherry_wood",
+        "minecraft:stripped_pale_oak_wood",
+        "minecraft:stripped_crimson_hyphae",
+        "minecraft:stripped_warped_hyphae",
+        "minecraft:bamboo_mosaic",
+        "minecraft:end_stone",
+        "minecraft:end_stone_bricks",
+        "minecraft:purpur_block",
+        "minecraft:purpur_pillar",
+        "minecraft:oak_wood",
+        "minecraft:spruce_wood",
+        "minecraft:birch_wood",
+        "minecraft:jungle_wood",
+        "minecraft:acacia_wood",
+        "minecraft:dark_oak_wood",
+        "minecraft:mangrove_wood",
+        "minecraft:cherry_wood",
+        "minecraft:pale_oak_wood",
+        "minecraft:crimson_hyphae",
+        "minecraft:warped_hyphae",
+        "minecraft:resin_block",
+        "minecraft:resin_bricks",
+        "minecraft:chiseled_resin_bricks",
+        "minecraft:packed_mud",
+        "minecraft:mud_bricks",
+        "minecraft:stone",
+        "minecraft:cobblestone",
+        "minecraft:mossy_cobblestone",
+        "minecraft:stone_bricks",
+        "minecraft:cracked_stone_bricks",
+        "minecraft:mossy_stone_bricks",
+        "minecraft:chiseled_stone_bricks",
+        "minecraft:smooth_stone",
+        "minecraft:deepslate",
+        "minecraft:cobbled_deepslate",
+        "minecraft:deepslate_bricks",
+        "minecraft:cracked_deepslate_bricks",
+        "minecraft:deepslate_tiles",
+        "minecraft:cracked_deepslate_tiles",
+        "minecraft:chiseled_deepslate",
+        "minecraft:polished_deepslate",
+        "minecraft:granite",
+        "minecraft:polished_granite",
+        "minecraft:diorite",
+        "minecraft:polished_diorite",
+        "minecraft:andesite",
+        "minecraft:polished_andesite",
+        "minecraft:amethyst_block",
+        "minecraft:basalt",
+        "minecraft:smooth_basalt",
+        "minecraft:polished_basalt",
+        "minecraft:blackstone",
+        "minecraft:gilded_blackstone",
+        "minecraft:chiseled_polished_blackstone",
+        "minecraft:polished_blackstone",
+        "minecraft:polished_blackstone_bricks",
+        "minecraft:cracked_polished_blackstone_bricks",
+        "minecraft:prismarine",
+        "minecraft:prismarine_bricks",
+        "minecraft:dark_prismarine",
+        "minecraft:netherrack",
+        "minecraft:nether_bricks",
+        "minecraft:cracked_nether_bricks",
+        "minecraft:chiseled_nether_bricks",
+        "minecraft:red_nether_bricks",
+        "minecraft:quartz_block",
+        "minecraft:chiseled_quartz_block",
+        "minecraft:quartz_bricks",
+        "minecraft:quartz_pillar",
+        "minecraft:smooth_quartz",
+        "minecraft:waxed_copper_block",
+        "minecraft:waxed_chiseled_copper",
+        "minecraft:waxed_cut_copper",
+        "minecraft:moss_block",
+        "minecraft:pale_moss_block",
+        "minecraft:warped_wart_block",
+        "minecraft:nether_wart_block",
+        "minecraft:bone_block",
+        "minecraft:soul_soil",
+        "minecraft:soul_sand",
+        "minecraft:obsidian",
+        "minecraft:dirt",
+        "minecraft:coarse_dirt",
+        "minecraft:rooted_dirt",
+        "minecraft:mud",
+        "minecraft:clay",
+        "minecraft:waxed_exposed_copper",
+        "minecraft:waxed_exposed_chiseled_copper",
+        "minecraft:waxed_exposed_cut_copper",
+        "minecraft:coal_ore",
+        "minecraft:iron_ore",
+        "minecraft:gold_ore",
+        "minecraft:redstone_ore",
+        "minecraft:emerald_ore",
+        "minecraft:lapis_ore",
+        "minecraft:diamond_ore",
+        "minecraft:hay_block",
+        "minecraft:dried_kelp_block",
+        "minecraft:melon",
+        "minecraft:pumpkin",
+        "minecraft:dripstone_block",
+        "minecraft:terracotta",
+        "minecraft:waxed_weathered_copper",
+        "minecraft:waxed_weathered_chiseled_copper",
+        "minecraft:waxed_weathered_cut_copper",
+        "minecraft:deepslate_coal_ore",
+        "minecraft:deepslate_iron_ore",
+        "minecraft:deepslate_gold_ore",
+        "minecraft:deepslate_redstone_ore",
+        "minecraft:deepslate_emerald_ore",
+        "minecraft:deepslate_lapis_ore",
+        "minecraft:deepslate_diamond_ore",
+        "minecraft:dead_tube_coral_block",
+        "minecraft:dead_brain_coral_block",
+        "minecraft:dead_bubble_coral_block",
+        "minecraft:dead_fire_coral_block",
+        "minecraft:dead_horn_coral_block",
+        "minecraft:bricks",
+        "minecraft:waxed_oxidized_copper",
+        "minecraft:waxed_oxidized_chiseled_copper",
+        "minecraft:waxed_oxidized_cut_copper",
+        "minecraft:coal_block",
+        "minecraft:iron_block",
+        "minecraft:gold_block",
+        "minecraft:redstone_block",
+        "minecraft:emerald_block",
+        "minecraft:lapis_block",
+        "minecraft:diamond_block",
+        "minecraft:netherite_block",
+        "minecraft:ancient_debris",
+        "minecraft:nether_gold_ore",
+        "minecraft:nether_quartz_ore",
+        "minecraft:deepslate_copper_ore",
+        "minecraft:copper_ore",
+        "minecraft:raw_iron_block",
+        "minecraft:raw_copper_block",
+        "minecraft:raw_gold_block",
+        "minecraft:white_glazed_terracotta",
+        "minecraft:light_gray_glazed_terracotta",
+        "minecraft:gray_glazed_terracotta",
+        "minecraft:black_glazed_terracotta",
+        "minecraft:brown_glazed_terracotta",
+        "minecraft:red_glazed_terracotta",
+        "minecraft:orange_glazed_terracotta",
+        "minecraft:yellow_glazed_terracotta",
+        "minecraft:lime_glazed_terracotta",
+        "minecraft:green_glazed_terracotta",
+        "minecraft:cyan_glazed_terracotta",
+        "minecraft:light_blue_glazed_terracotta",
+        "minecraft:blue_glazed_terracotta",
+        "minecraft:purple_glazed_terracotta",
+        "minecraft:magenta_glazed_terracotta",
+        "minecraft:pink_glazed_terracotta",
+        "minecraft:white_concrete",
+        "minecraft:light_gray_concrete",
+        "minecraft:gray_concrete",
+        "minecraft:black_concrete",
+        "minecraft:brown_concrete",
+        "minecraft:red_concrete",
+        "minecraft:orange_concrete",
+        "minecraft:yellow_concrete",
+        "minecraft:lime_concrete",
+        "minecraft:green_concrete",
+        "minecraft:cyan_concrete",
+        "minecraft:light_blue_concrete",
+        "minecraft:blue_concrete",
+        "minecraft:purple_concrete",
+        "minecraft:magenta_concrete",
+        "minecraft:pink_concrete",
+        "minecraft:white_terracotta",
+        "minecraft:light_gray_terracotta",
+        "minecraft:gray_terracotta",
+        "minecraft:black_terracotta",
+        "minecraft:brown_terracotta",
+        "minecraft:red_terracotta",
+        "minecraft:orange_terracotta",
+        "minecraft:yellow_terracotta",
+        "minecraft:lime_terracotta",
+        "minecraft:green_terracotta",
+        "minecraft:cyan_terracotta",
+        "minecraft:light_blue_terracotta",
+        "minecraft:blue_terracotta",
+        "minecraft:purple_terracotta",
+        "minecraft:magenta_terracotta",
+        "minecraft:pink_terracotta",
+        "minecraft:white_wool",
+        "minecraft:light_gray_wool",
+        "minecraft:gray_wool",
+        "minecraft:black_wool",
+        "minecraft:brown_wool",
+        "minecraft:red_wool",
+        "minecraft:orange_wool",
+        "minecraft:yellow_wool",
+        "minecraft:lime_wool",
+        "minecraft:green_wool",
+        "minecraft:cyan_wool",
+        "minecraft:light_blue_wool",
+        "minecraft:blue_wool",
+        "minecraft:purple_wool",
+        "minecraft:magenta_wool",
+        "minecraft:pink_wool"
+    );
+    private static final List<String> palette = new ArrayList<>(defaultPalette);
+
+    private static final boolean defaultForceCommand = false;
+    private static final String defaultCommand = "setblock %d %d %d %s";
+    private static final long defaultCommandDelay = 50;
+    private static boolean forceCommand = defaultForceCommand;
+    private static String command = defaultCommand;
+    private static long commandDelay = defaultCommandDelay;
+
+    static {
+        registerCodec(CODEC.getFieldMap());
+    }
+
+    public static List<String> defaultPalette() {
+        return defaultPalette;
+    }
+
+    public static List<String> getPalette() {
+        return palette;
+    }
+
+    public static String defaultCommand() {
+        return defaultCommand;
+    }
+
+    public static String getCommand() {
+        return command;
+    }
+
+    public static void setCommand(String command) {
+        Config.command = command;
+    }
+
+    public static boolean defaultForceCommand() {
+        return defaultForceCommand;
+    }
+
+    public static boolean isForceCommand() {
+        return forceCommand;
+    }
+
+    public static void setForceCommand(boolean forceCommand) {
+        Config.forceCommand = forceCommand;
+    }
+
+    public static long defaultCommandDelay() {
+        return defaultCommandDelay;
+    }
+
+    public static long getCommandDelay() {
+        return commandDelay;
+    }
+
+    public static void setCommandDelay(long commandDelay) {
+        Config.commandDelay = commandDelay;
+    }
+
+    public static void registerCodec(Map<String, Pair<ConfigCodec.ConsumerWithIOException<JsonReader>, ConfigCodec.ConsumerWithIOException<JsonWriter>>> map) {
+        map.put("command", Pair.of(
+            reader -> setCommand(reader.nextString()),
+            writer -> writer.value(getCommand())));
+        map.put("forceCommand", Pair.of(
+            reader -> setForceCommand(reader.nextBoolean()),
+            writer -> writer.value(isForceCommand())));
+        map.put("commandDelay", Pair.of(
+            reader -> setCommandDelay(reader.nextLong()),
+            writer -> writer.value(getCommandDelay())));
+        map.put("palette", Pair.of(
+            reader -> ConfigCodec.readStringList(reader, getPalette(), true),
+            writer -> ConfigCodec.writeStringList(writer, getPalette())));
+    }
+
+    public static boolean load(File configFile) {
+        try (var reader = new JsonReader(new FileReader(configFile))) {
+            reader.setLenient(true);
+            return CODEC.deserialize(reader);
+        } catch (Exception e) {
+            BlockyFile.LOGGER.warn("Failed to read config: {}", e.getLocalizedMessage());
+        }
+        return false;
+    }
+
+    public static boolean save(File configFile) {
+        try (var writer = new JsonWriter(new FileWriter(configFile))) {
+            writer.setHtmlSafe(false);
+            writer.setIndent("  ");
+            return CODEC.serialize(writer);
+        } catch (Exception e) {
+            BlockyFile.LOGGER.warn("Failed to write config: {}", e.getLocalizedMessage());
+        }
+        return false;
+    }
+}

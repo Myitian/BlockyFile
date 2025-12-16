@@ -1,0 +1,7 @@
+accessWidener v2  named
+accessible field net/minecraft/commands/arguments/coordinates/LocalCoordinates left     D
+accessible field net/minecraft/commands/arguments/coordinates/LocalCoordinates up       D
+accessible field net/minecraft/commands/arguments/coordinates/LocalCoordinates forwards D
+accessible field net/minecraft/commands/arguments/coordinates/WorldCoordinates x        Lnet/minecraft/commands/arguments/coordinates/WorldCoordinate;
+accessible field net/minecraft/commands/arguments/coordinates/WorldCoordinates y        Lnet/minecraft/commands/arguments/coordinates/WorldCoordinate;
+accessible field net/minecraft/commands/arguments/coordinates/WorldCoordinates z        Lnet/minecraft/commands/arguments/coordinates/WorldCoordinate;

@@ -1,0 +1,74 @@
+import net.fabricmc.loom.LoomGradleExtension
+
+plugins {
+    id "com.gradleup.shadow" version "9.2.2"
+}
+
+architectury {
+    platformSetupLoomIde()
+    neoForge()
+}
+
+configurations {
+    common
+    shadowCommon // Don't use shadow from the shadow plugin since it *excludes* files.
+    compileClasspath.extendsFrom common
+    runtimeClasspath.extendsFrom common
+    developmentNeoForge.extendsFrom common
+}
+
+shadow {
+    addShadowVariantIntoJavaComponent = false
+}
+
+base {
+    archivesName = "${project.mod_id}-${project.name}-${project.version_id}"
+}
+
+dependencies {
+    neoForge "net.neoforged:neoforge:${project.main_neoforge_version}"
+    modImplementation "me.shedaniel.cloth:cloth-config-neoforge:${project.main_cloth_config_version}"
+
+    common(project(path: ":common", configuration: "namedElements")) { transitive false }
+    shadowCommon(project(path: ":common", configuration: "transformProductionNeoForge")) { transitive = false }
+}
+
+processResources {
+    def propsCopy = new HashMap(props)
+    propsCopy.replace("mod_version", "${rootProject.mod_version}-${project.name}-${rootProject.version_id}")
+    inputs.properties propsCopy
+
+    filesMatching(["pack.mcmeta", "META-INF/*mods.toml"]) {
+        expand propsCopy
+    }
+}
+
+shadowJar {
+    exclude "fabric.mod.json"
+    exclude "architectury.common.json"
+    exclude "*-refmap.json"
+    configurations = [project.configurations.shadowCommon]
+    archiveClassifier = "dev-shadow"
+}
+
+remapJar {
+    input.set shadowJar.archiveFile
+    dependsOn shadowJar
+}
+
+sourcesJar {
+    def commonSources = project(":common").sourcesJar
+    dependsOn commonSources
+    from commonSources.archiveFile.map { zipTree(it) }
+}
+
+publishing {
+    publications {
+        mavenForge(MavenPublication) {
+            artifactId = rootProject.mod_id + "-" + project.name
+            from components.java
+        }
+    }
+    repositories {
+    }
+}

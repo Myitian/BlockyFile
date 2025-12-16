@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "id": "${mod_id}",
+  "version": "${mod_version}",
+  "name": "${mod_name}",
+  "description": "${mod_description}",
+  "authors": [
+    "${mod_author}"
+  ],
+  "contact": {
+    "sources": "${mod_source}"
+  },
+  "license": "${mod_license}",
+  "icon": "${mod_icon}",
+  "accessWidener": "${mod_id}.accesswidener",
+  "environment": "client",
+  "entrypoints": {
+    "client": [
+      "${maven_group}.fabric.BlockyFileFabricClient"
+    ],
+    "modmenu": [
+      "${maven_group}.integration.modmenu.ModMenuIntegration"
+    ]
+  },
+  "depends": {
+    "minecraft": "${supported_minecraft_version_fabric}"
+  },
+  "suggests": {
+    "modmenu": "*",
+    "cloth-config": "*"
+  }
+}
