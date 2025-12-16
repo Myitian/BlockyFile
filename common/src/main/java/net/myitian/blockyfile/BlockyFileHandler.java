@@ -47,42 +47,42 @@ public abstract class BlockyFileHandler<STREAM extends AutoCloseable, ARG> {
             z2 += zDirection;
             LOOP:
             switch (axisOrder) {
-                case xyz -> {
+                case XYZ -> {
                     for (int z = z1; z != z2; z += zDirection)
                         for (int y = y1; y != y2; y += yDirection)
                             for (int x = x1; x != x2; x += xDirection)
                                 if (next(stream, x, y, z, consumer))
                                     break LOOP;
                 }
-                case xzy -> {
+                case XZY -> {
                     for (int y = y1; y != y2; y += yDirection)
                         for (int z = z1; z != z2; z += zDirection)
                             for (int x = x1; x != x2; x += xDirection)
                                 if (next(stream, x, y, z, consumer))
                                     break LOOP;
                 }
-                case yxz -> {
+                case YXZ -> {
                     for (int z = z1; z != z2; z += zDirection)
                         for (int x = x1; x != x2; x += xDirection)
                             for (int y = y1; y != y2; y += yDirection)
                                 if (next(stream, x, y, z, consumer))
                                     break LOOP;
                 }
-                case yzx -> {
+                case YZX -> {
                     for (int x = x1; x != x2; x += xDirection)
                         for (int z = z1; z != z2; z += zDirection)
                             for (int y = y1; y != y2; y += yDirection)
                                 if (next(stream, x, y, z, consumer))
                                     break LOOP;
                 }
-                case zxy -> {
+                case ZXY -> {
                     for (int y = y1; y != y2; y += yDirection)
                         for (int x = x1; x != x2; x += xDirection)
                             for (int z = z1; z != z2; z += zDirection)
                                 if (next(stream, x, y, z, consumer))
                                     break LOOP;
                 }
-                case zyx -> {
+                case ZYX -> {
                     for (int x = x1; x != x2; x += xDirection)
                         for (int y = y1; y != y2; y += yDirection)
                             for (int z = z1; z != z2; z += zDirection)

@@ -1,4 +1,31 @@
 {
   "modmenu.nameTranslation.blockyfile": "Blocky File",
-  "modmenu.descriptionTranslation.blockyfile": "Use blocks to store files in the Minecraft world."
+  "modmenu.descriptionTranslation.blockyfile": "Use blocks to store files in the Minecraft world.",
+
+  "title.blockyfile.config": "Blocky File Configuration",
+  "category.blockyfile.command": "Command",
+  "option.blockyfile.command": "Set block command",
+  "option.blockyfile.command.tooltip": "Command for setting blocks. No ‘/’ prefix is needed.",
+  "option.blockyfile.forceCommand": "Force to use command",
+  "option.blockyfile.forceCommand.tooltip": "Force to use command to set blocks even in a single-player world.",
+  "option.blockyfile.commandInterval": "Command interval",
+  "option.blockyfile.commandInterval.tooltip": "Command sending interval (milliseconds).",
+  "category.blockyfile.palette": "Palette",
+  "option.blockyfile.palette": "Palette",
+  "option.blockyfile.palette.tooltip": "The palette used to represent file data.\nIts length should be 2, 4, 8, 16, 32, 64, 128, or 256.",
+
+  "commands.blockyfile.store.succeed": "File stored successfully! (%d bytes, %d blocks)",
+  "commands.blockyfile.load.succeed": "File loaded successfully! (%d bytes, %d blocks)",
+  "commands.blockyfile.reload-config.succeed": "Configuration reloaded successfully!",
+  "commands.blockyfile.import-palette.succeed": "Palette imported successfully!",
+  "commands.blockyfile.export-palette.succeed": "Palette exported successfully!",
+  "commands.blockyfile.invalid_palette_size": "Invalid palette size: %d",
+  "commands.blockyfile.invalid_identifier": "Invalid identifier: %s",
+  "commands.blockyfile.duplicate_identifier": "Duplicate identifier: %s",
+  "commands.blockyfile.block_is_air_or_not_exist": "Block is air or not exist: %s",
+
+  "argument.blockyfile.invalid": "Invalid argument: %s",
+  "argument.blockyfile.file.not_exists": "File is not existed: %s",
+  "argument.blockyfile.file.exists": "File is already existed: %s",
+  "argument.blockyfile.file.too_large": "The file is too large (%d bytes), while the maximum allowed size is %d bytes."
 }

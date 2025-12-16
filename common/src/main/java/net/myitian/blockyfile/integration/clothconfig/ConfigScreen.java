@@ -16,7 +16,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 
-public class ConfigScreen {
+public final class ConfigScreen {
     public static Screen buildConfigScreen(Screen parent) {
         File configFile = BlockyFile.CONFIG_PATH.toFile();
         Config.load(configFile);
@@ -51,11 +51,11 @@ public class ConfigScreen {
             .setSaveConsumer(Config::setForceCommand)
             .build());
         category.addEntry(entryBuilder.startLongField(
-                Component.translatable("option.blockyfile.commandDelay"),
-                Config.getCommandDelay())
-            .setDefaultValue(Config::defaultCommandDelay)
-            .setTooltip(Component.translatable("option.blockyfile.commandDelay.tooltip"))
-            .setSaveConsumer(Config::setCommandDelay)
+                Component.translatable("option.blockyfile.commandInterval"),
+                Config.getCommandInterval())
+            .setDefaultValue(Config::defaultCommandInterval)
+            .setTooltip(Component.translatable("option.blockyfile.commandInterval.tooltip"))
+            .setSaveConsumer(Config::setCommandInterval)
             .build());
     }
 
@@ -82,7 +82,7 @@ public class ConfigScreen {
                     if (id == null) {
                         return Optional.of(BlockyFile.translatable_INVALID_IDENTIFIER(s));
                     } else if (!ids.add(id)) {
-                        return Optional.of(BlockyFile.translatable_DUPLICATED_IDENTIFIER(id));
+                        return Optional.of(BlockyFile.translatable_DUPLICATE_IDENTIFIER(id));
                     } else if (BuiltInRegistries.BLOCK.getValue(id) == Blocks.AIR) {
                         return Optional.of(BlockyFile.translatable_BLOCK_IS_AIR_OR_NOT_EXIST(id));
                     }

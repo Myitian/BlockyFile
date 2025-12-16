@@ -25,6 +25,7 @@ base {
 
 dependencies {
     forge "net.minecraftforge:forge:${project.main_forge_version}"
+    // Cloth Config is no longer supported on Forge MC 1.21.4 and later versions.
 
     common(project(path: ":common", configuration: "namedElements")) { transitive false }
     shadowCommon(project(path: ":common", configuration: "transformProductionForge")) { transitive = false }

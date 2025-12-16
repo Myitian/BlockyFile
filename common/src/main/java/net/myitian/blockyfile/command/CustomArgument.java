@@ -10,33 +10,25 @@ import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.network.chat.Component;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Function;
 
-public class EnumArgument<E extends Enum<E>> implements ArgumentType<E> {
-    public static final DynamicCommandExceptionType INVALID_VALUE_EXCEPTION = new DynamicCommandExceptionType(obj -> Component.translatableEscape("argument.blockyfile.enum.invalid", obj));
-    private final Class<E> clazz;
+public final class CustomArgument<T> implements ArgumentType<T> {
+    public static final DynamicCommandExceptionType INVALID_VALUE_EXCEPTION = new DynamicCommandExceptionType(obj -> Component.translatableEscape("argument.blockyfile.invalid", obj));
+    private final Function<String, T> parser;
     private final Collection<String> values;
 
-    public EnumArgument(Class<E> clazz) {
-        this.clazz = clazz;
-        values = Arrays.stream(clazz.getEnumConstants()).map(Enum::name).toList();
-    }
-
-    public static <E extends Enum<E>> EnumArgument<E> enumArg(Class<E> clazz) {
-        return new EnumArgument<>(clazz);
-    }
-
-    public static <E extends Enum<E>, S> E getEnum(CommandContext<S> context, String name, Class<E> clazz) {
-        return context.getArgument(name, clazz);
+    public CustomArgument(Function<String, T> parser, Collection<String> values) {
+        this.parser = parser;
+        this.values = values;
     }
 
     @Override
-    public E parse(StringReader stringReader) throws CommandSyntaxException {
+    public T parse(StringReader stringReader) throws CommandSyntaxException {
         String string = stringReader.readUnquotedString();
         try {
-            return Enum.valueOf(clazz, string);
+            return parser.apply(string);
         } catch (IllegalArgumentException e) {
             throw INVALID_VALUE_EXCEPTION.createWithContext(stringReader, string);
         }

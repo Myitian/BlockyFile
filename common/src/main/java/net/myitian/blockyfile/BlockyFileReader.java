@@ -10,7 +10,7 @@ import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-public class BlockyFileReader extends BlockyFileHandler<OutputStream, BlockyFileReader.Supplier> {
+public final class BlockyFileReader extends BlockyFileHandler<OutputStream, BlockyFileReader.Supplier> {
     private final AbstractObject2IntMap<Block> block2index;
 
     public BlockyFileReader(AbstractObject2IntMap<Block> block2index) {
@@ -32,7 +32,7 @@ public class BlockyFileReader extends BlockyFileHandler<OutputStream, BlockyFile
     }
 
     /**
-     * @return if found an invalid block
+     * @return true if found an invalid block
      */
     @Override
     protected boolean next(

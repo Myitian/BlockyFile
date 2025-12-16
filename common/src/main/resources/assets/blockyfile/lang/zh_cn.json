@@ -1,4 +1,31 @@
 {
   "modmenu.nameTranslation.blockyfile": "方块文件",
-  "modmenu.descriptionTranslation.blockyfile": "在Minecraft世界中使用方块存储文件"
+  "modmenu.descriptionTranslation.blockyfile": "在Minecraft世界中使用方块存储文件",
+
+  "title.blockyfile.config": "方块文件配置",
+  "category.blockyfile.command": "命令",
+  "option.blockyfile.command": "设置方块命令",
+  "option.blockyfile.command.tooltip": "设置方块的命令。无需‘/’前缀。",
+  "option.blockyfile.forceCommand": "强制使用命令",
+  "option.blockyfile.forceCommand.tooltip": "即使在单人游戏世界中也强制使用命令设置方块。",
+  "option.blockyfile.commandInterval": "命令间隔",
+  "option.blockyfile.commandInterval.tooltip": "命令发送的间隔（毫秒）。",
+  "category.blockyfile.palette": "调色板",
+  "option.blockyfile.palette": "调色板",
+  "option.blockyfile.palette.tooltip": "用于表示文件数据的调色板。\n其长度应为2、4、8、16、32、64、128或256。",
+
+  "commands.blockyfile.store.succeed": "文件储存成功！（%d字节，%d方块）",
+  "commands.blockyfile.load.succeed": "文件加载成功！（%d字节，%d方块）",
+  "commands.blockyfile.reload-config.succeed": "配置重新加载成功！",
+  "commands.blockyfile.import-palette.succeed": "调色板导入成功！",
+  "commands.blockyfile.export-palette.succeed": "调色板导出成功！",
+  "commands.blockyfile.invalid_palette_size": "无效的调色板尺寸：%d",
+  "commands.blockyfile.invalid_identifier": "无效的标识符：%s",
+  "commands.blockyfile.duplicate_identifier": "重复的标识符：%s",
+  "commands.blockyfile.block_is_air_or_not_exist": "方块为空气或不存在：%s",
+
+  "argument.blockyfile.invalid": "无效的参数：%s",
+  "argument.blockyfile.file.not_exists": "文件不存在：%s",
+  "argument.blockyfile.file.exists": "文件已经存在：%s",
+  "argument.blockyfile.file.too_large": "文件过大（%d字节），而允许的最大大小为%d字节。"
 }

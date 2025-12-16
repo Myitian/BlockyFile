@@ -8,7 +8,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import java.io.IOException;
 import java.util.*;
 
-public class ConfigCodec {
+public final class ConfigCodec {
     private final LinkedHashMap<String, Pair<ConsumerWithIOException<JsonReader>, ConsumerWithIOException<JsonWriter>>> fieldMap = new LinkedHashMap<>();
 
     public static void readStringList(JsonReader reader, List<String> list, boolean clearBeforeAdd) throws IOException {

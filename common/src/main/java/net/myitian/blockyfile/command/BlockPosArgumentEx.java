@@ -22,7 +22,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
-public class BlockPosArgumentEx implements ArgumentType<Coordinates> {
+// original BlockPosArgument only supports CommandContext<CommandSourceStack>,
+// but client-side commands on Fabric use CommandContext<FabricClientCommandSource>,
+// so here re-implements the BlockPosArgument.
+public final class BlockPosArgumentEx implements ArgumentType<Coordinates> {
+    public static final Collection<SharedSuggestionProvider.TextCoordinates> DEFAULT_LOCAL = Collections.singleton(SharedSuggestionProvider.TextCoordinates.DEFAULT_LOCAL);
     public static final Collection<String> EXAMPLES = List.of("0 0 0", "~ ~ ~", "^ ^ ^", "^1 ^ ^-5", "~0.5 ~1 ~-5");
 
     public static BlockPosArgumentEx blockPos() {
@@ -49,19 +53,17 @@ public class BlockPosArgumentEx implements ArgumentType<Coordinates> {
     }
 
     public Coordinates parse(StringReader reader) throws CommandSyntaxException {
-        return reader.canRead() && reader.peek() == '^' ? LocalCoordinates.parse(reader) : WorldCoordinates.parseInt(reader);
+        return reader.canRead() && reader.peek() == '^' ?
+            LocalCoordinates.parse(reader) : WorldCoordinates.parseInt(reader);
     }
 
     public <S> CompletableFuture<Suggestions> listSuggestions(CommandContext<S> commandContext, SuggestionsBuilder suggestionsBuilder) {
         if (commandContext.getSource() instanceof SharedSuggestionProvider source) {
             String string = suggestionsBuilder.getRemaining();
-            Collection<SharedSuggestionProvider.TextCoordinates> collection;
-            if (!string.isEmpty() && string.charAt(0) == '^') {
-                collection = Collections.singleton(SharedSuggestionProvider.TextCoordinates.DEFAULT_LOCAL);
-            } else {
-                collection = source.getRelevantCoordinates();
-            }
-            return SharedSuggestionProvider.suggestCoordinates(string, collection, suggestionsBuilder, Commands.createValidator(this::parse));
+            Collection<SharedSuggestionProvider.TextCoordinates> collection
+                = !string.isEmpty() && string.charAt(0) == '^' ? DEFAULT_LOCAL : source.getRelevantCoordinates();
+            return SharedSuggestionProvider.suggestCoordinates(
+                string, collection, suggestionsBuilder, Commands.createValidator(this::parse));
         }
         return Suggestions.empty();
     }

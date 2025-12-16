@@ -13,7 +13,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 
-public class BlockyFileWriter extends BlockyFileHandler<InputStream, BlockyFileWriter.Consumer> {
+public final class BlockyFileWriter extends BlockyFileHandler<InputStream, BlockyFileWriter.Consumer> {
     private final List<BlockState> index2block;
     private boolean eof = false;
 
@@ -47,7 +47,7 @@ public class BlockyFileWriter extends BlockyFileHandler<InputStream, BlockyFileW
     }
 
     /**
-     * @return if reached the end of stream or an error occurred
+     * @return true if reached the end of stream or an error occurred
      */
     @Override
     protected boolean next(
@@ -64,25 +64,26 @@ public class BlockyFileWriter extends BlockyFileHandler<InputStream, BlockyFileW
                 return true;
             blockCounter++;
         } else {
-            if (eof && length <= 0) {
-                return true;
+            if (eof) { // Already EOF
+                if (length <= 0)
+                    return true; // No more data
             } else if (length < bitPerBlock) {
                 int read = stream.read();
-                if (read >= 0) {
+                if (read >= 0) { // Normal
                     buffer |= read << 8;
                     length += 8;
                     byteCounter++;
-                } else {
+                } else { // Reached EOF
                     eof = true;
+                    if (length <= 0)
+                        return true; // No more data
                 }
             }
-            if (eof && length <= 0)
-                return true;
             int offset = 16 - bitPerBlock;
             int mask = ((1 << bitPerBlock) - 1) << offset;
             BlockState blockState = index2block.get((buffer & mask) >> offset);
             if (!consumer.apply(blockState, x, y, z))
-                return true;
+                return true; // Failed to execute
             /*
              * #if DEBUG:
              * int masked = buffer & mask;

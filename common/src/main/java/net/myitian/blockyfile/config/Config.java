@@ -277,10 +277,11 @@ public final class Config {
 
     private static final boolean defaultForceCommand = false;
     private static final String defaultCommand = "setblock %d %d %d %s";
-    private static final long defaultCommandDelay = 50;
+    private static final long defaultCommandInterval = 50;
+
     private static boolean forceCommand = defaultForceCommand;
     private static String command = defaultCommand;
-    private static long commandDelay = defaultCommandDelay;
+    private static long commandInterval = defaultCommandInterval;
 
     static {
         registerCodec(CODEC.getFieldMap());
@@ -318,16 +319,16 @@ public final class Config {
         Config.forceCommand = forceCommand;
     }
 
-    public static long defaultCommandDelay() {
-        return defaultCommandDelay;
+    public static long defaultCommandInterval() {
+        return defaultCommandInterval;
     }
 
-    public static long getCommandDelay() {
-        return commandDelay;
+    public static long getCommandInterval() {
+        return commandInterval;
     }
 
-    public static void setCommandDelay(long commandDelay) {
-        Config.commandDelay = commandDelay;
+    public static void setCommandInterval(long commandInterval) {
+        Config.commandInterval = commandInterval;
     }
 
     public static void registerCodec(Map<String, Pair<ConfigCodec.ConsumerWithIOException<JsonReader>, ConfigCodec.ConsumerWithIOException<JsonWriter>>> map) {
@@ -337,9 +338,9 @@ public final class Config {
         map.put("forceCommand", Pair.of(
             reader -> setForceCommand(reader.nextBoolean()),
             writer -> writer.value(isForceCommand())));
-        map.put("commandDelay", Pair.of(
-            reader -> setCommandDelay(reader.nextLong()),
-            writer -> writer.value(getCommandDelay())));
+        map.put("commandInterval", Pair.of(
+            reader -> setCommandInterval(reader.nextLong()),
+            writer -> writer.value(getCommandInterval())));
         map.put("palette", Pair.of(
             reader -> ConfigCodec.readStringList(reader, getPalette(), true),
             writer -> ConfigCodec.writeStringList(writer, getPalette())));

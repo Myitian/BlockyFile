@@ -1,6 +1,10 @@
 package net.myitian.blockyfile;
 
 import com.mojang.brigadier.Command;
+import com.mojang.brigadier.arguments.ArgumentType;
+import com.mojang.brigadier.arguments.StringArgumentType;
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
+import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.Dynamic2CommandExceptionType;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
@@ -20,31 +24,46 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
+import net.myitian.blockyfile.command.BlockPosArgumentEx;
+import net.myitian.blockyfile.command.CustomArgument;
 import net.myitian.blockyfile.config.Config;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Function;
+import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 public final class BlockyFile {
     public static final String MOD_ID = "blockyfile";
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
     public static final Path CONFIG_PATH = PlatformUtil.getConfigDirectory().resolve(MOD_ID + ".json");
     public static final boolean CLOTH_CONFIG_EXISTED = isClothConfigExisted();
-    public static final DynamicCommandExceptionType INVALID_PALETTE_SIZE_EXCEPTION = new DynamicCommandExceptionType(size -> Component.translatable("commands.blockyfile.invalid_palette_size", size));
-    public static final DynamicCommandExceptionType FILE_NOT_EXISTS_EXCEPTION = new DynamicCommandExceptionType(path -> Component.translatableEscape("argument.blockyfile.file.not_exists", path));
-    public static final DynamicCommandExceptionType FILE_EXISTS_EXCEPTION = new DynamicCommandExceptionType(path -> Component.translatableEscape("argument.blockyfile.file.exists", path));
-    public static final Dynamic2CommandExceptionType FILE_TOO_LARGE_EXCEPTION = new Dynamic2CommandExceptionType((realSize, maxSize) -> Component.translatableEscape("argument.blockyfile.file.not_exists", realSize, maxSize));
+    public static final Pattern NEWLINE_PATTERN = Pattern.compile("[\\r\\n]");
+    public static final Component RELOAD_CONFIG_SUCCEED = Component.translatable("commands.blockyfile.reload-config.succeed");
+    public static final Component IMPORT_PALETTE_SUCCEED = Component.translatable("commands.blockyfile.import-palette.succeed");
+    public static final Component EXPORT_PALETTE_SUCCEED = Component.translatable("commands.blockyfile.export-palette.succeed");
+    public static final DynamicCommandExceptionType INVALID_PALETTE_SIZE_EXCEPTION = new DynamicCommandExceptionType(
+        size -> Component.translatable("commands.blockyfile.invalid_palette_size", size));
+    public static final DynamicCommandExceptionType FILE_NOT_EXISTS_EXCEPTION = new DynamicCommandExceptionType(
+        path -> Component.translatable("argument.blockyfile.file.not_exists", path));
+    public static final DynamicCommandExceptionType FILE_EXISTS_EXCEPTION = new DynamicCommandExceptionType(
+        path -> Component.translatable("argument.blockyfile.file.exists", path));
+    public static final Dynamic2CommandExceptionType FILE_TOO_LARGE_EXCEPTION = new Dynamic2CommandExceptionType(
+        (realSize, maxSize) -> Component.translatable("argument.blockyfile.file.not_exists", realSize, maxSize));
 
     private static final ArrayList<BlockState> index2block = new ArrayList<>();
     private static final Object2IntOpenHashMap<Block> block2index = new Object2IntOpenHashMap<>();
     private static final Object2ObjectOpenHashMap<Block, String> block2id = new Object2ObjectOpenHashMap<>();
-    private static Component lastError = Component.literal("unloaded");
+    private static Component lastError = Component.literal("not loaded");
 
     public static void init() {
         block2index.defaultReturnValue(-1);
@@ -75,8 +94,8 @@ public final class BlockyFile {
         return Component.translatable("commands.blockyfile.invalid_identifier", id);
     }
 
-    public static Component translatable_DUPLICATED_IDENTIFIER(ResourceLocation id) {
-        return Component.translatable("commands.blockyfile.duplicated_identifier", id);
+    public static Component translatable_DUPLICATE_IDENTIFIER(ResourceLocation id) {
+        return Component.translatable("commands.blockyfile.duplicate_identifier", id);
     }
 
     public static Component translatable_BLOCK_IS_AIR_OR_NOT_EXIST(ResourceLocation id) {
@@ -101,7 +120,7 @@ public final class BlockyFile {
             if (id == null) {
                 return translatable_INVALID_IDENTIFIER(s);
             } else if (!ids.add(id)) {
-                return translatable_DUPLICATED_IDENTIFIER(id);
+                return translatable_DUPLICATE_IDENTIFIER(id);
             }
             Block b = BuiltInRegistries.BLOCK.getValue(id);
             if (b == Blocks.AIR) {
@@ -139,8 +158,112 @@ public final class BlockyFile {
         return getLastError() != null ? null : new BlockyFileReader(block2index);
     }
 
+    public static <S> LiteralArgumentBuilder<S> buildCommandArguments(
+        Literal<S> literal,
+        Argument<S> argument,
+        Function<S, Level> getWorld,
+        Function<S, CommandFeedback> getFeedbackWrapper) {
+        return literal.literal("blockyfile")
+            .then(argument.argument("mode", new CustomArgument<>(FileOperationMode::parse, FileOperationMode.VALUES))
+                .then(argument.argument("pos1", BlockPosArgumentEx.blockPos())
+                    .then(argument.argument("pos2", BlockPosArgumentEx.blockPos())
+                        .then(argument.argument("axisOrder", new CustomArgument<>(AxisOrder::parse, AxisOrder.VALUES))
+                            .then(argument.argument("file", StringArgumentType.greedyString())
+                                .executes(context -> {
+                                    S source = context.getSource();
+                                    Level world = getWorld.apply(source);
+                                    return executeCommand(
+                                        context.getArgument("mode", FileOperationMode.class),
+                                        BlockPosArgumentEx.getInWorldBlockPos(context, world, "pos1"),
+                                        BlockPosArgumentEx.getInWorldBlockPos(context, world, "pos2"),
+                                        context.getArgument("axisOrder", AxisOrder.class),
+                                        StringArgumentType.getString(context, "file"),
+                                        getFeedbackWrapper.apply(source),
+                                        Minecraft.getInstance().player);
+                                }))))))
+            .then(literal.literal("reload-config")
+                .executes(context -> {
+                    File configFile = CONFIG_PATH.toFile();
+                    Config.load(configFile);
+                    loadPalette();
+                    Component lastError = getLastError();
+                    CommandFeedback feedback = getFeedbackWrapper.apply(context.getSource());
+                    if (lastError != null)
+                        throw new SimpleCommandExceptionType(lastError).create();
+                    feedback.sendFeedback(RELOAD_CONFIG_SUCCEED);
+                    return Command.SINGLE_SUCCESS;
+                }))
+            .then(literal.literal("palette")
+                .then(argument.argument("mode", new CustomArgument<>(PaletteOperationMode::parse, PaletteOperationMode.VALUES))
+                    .then(literal.literal("clipboard")
+                        .executes(context -> {
+                            CommandFeedback feedback = getFeedbackWrapper.apply(context.getSource());
+                            switch (context.getArgument("mode", PaletteOperationMode.class)) {
+                                case IMPORT -> {
+                                    String clipboard = Minecraft.getInstance().keyboardHandler.getClipboard();
+                                    importPalette(NEWLINE_PATTERN.splitAsStream(clipboard));
+                                    Component lastError = getLastError();
+                                    if (lastError != null)
+                                        throw new SimpleCommandExceptionType(lastError).create();
+                                    feedback.sendFeedback(IMPORT_PALETTE_SUCCEED);
+                                }
+                                case EXPORT -> {
+                                    String clipboard = String.join(System.lineSeparator(), Config.getPalette());
+                                    Minecraft.getInstance().keyboardHandler.setClipboard(clipboard);
+                                    feedback.sendFeedback(EXPORT_PALETTE_SUCCEED);
+                                }
+                            }
+                            return Command.SINGLE_SUCCESS;
+                        }))
+                    .then(literal.literal("file")
+                        .then(argument.argument("file", StringArgumentType.greedyString())
+                            .executes(context -> {
+                                CommandFeedback feedback = getFeedbackWrapper.apply(context.getSource());
+                                String file = StringArgumentType.getString(context, "file");
+                                Path p = Path.of(file);
+                                switch (context.getArgument("mode", PaletteOperationMode.class)) {
+                                    case IMPORT -> {
+                                        if (!(Files.exists(p) && Files.isRegularFile(p)))
+                                            throw FILE_NOT_EXISTS_EXCEPTION.create(file);
+                                        try {
+                                            importPalette(Files.lines(p));
+                                        } catch (IOException e) {
+                                            throw new SimpleCommandExceptionType(exceptionAsComponent(e)).create();
+                                        }
+                                        Component lastError = getLastError();
+                                        if (lastError != null)
+                                            throw new SimpleCommandExceptionType(lastError).create();
+                                        feedback.sendFeedback(IMPORT_PALETTE_SUCCEED);
+                                    }
+                                    case EXPORT -> {
+                                        if (Files.exists(p))
+                                            throw FILE_EXISTS_EXCEPTION.create(file);
+                                        try {
+                                            Files.write(p, Config.getPalette());
+                                        } catch (IOException e) {
+                                            throw new SimpleCommandExceptionType(exceptionAsComponent(e)).create();
+                                        }
+                                        feedback.sendFeedback(EXPORT_PALETTE_SUCCEED);
+                                    }
+                                }
+                                return Command.SINGLE_SUCCESS;
+                            })))));
+    }
+
+    public static void importPalette(Stream<String> stream) {
+        List<String> palette = Config.getPalette();
+        palette.clear();
+        stream.map(String::trim)
+            .filter(it -> !it.isEmpty())
+            .forEachOrdered(palette::add);
+        stream.close();
+        File configFile = CONFIG_PATH.toFile();
+        Config.save(configFile);
+        loadPalette();
+    }
+
     public static int executeCommand(
-        OperationMode mode,
+        FileOperationMode mode,
         BlockPos pos1,
         BlockPos pos2,
         AxisOrder axisOrder,
@@ -148,48 +271,9 @@ public final class BlockyFile {
         CommandFeedback feedback,
         LocalPlayer player) throws CommandSyntaxException {
         return switch (mode) {
-            case store -> storeFile(pos1, pos2, axisOrder, file, feedback, player);
-            case load -> loadFile(pos1, pos2, axisOrder, file, feedback, player);
+            case STORE -> storeFile(pos1, pos2, axisOrder, file, feedback, player);
+            case LOAD -> loadFile(pos1, pos2, axisOrder, file, feedback, player);
         };
-    }
-
-    public static int storeFile(BlockPos pos1, BlockPos pos2, AxisOrder axisOrder, String file, CommandFeedback feedback, LocalPlayer player) throws CommandSyntaxException {
-        BlockyFileWriter writer = tryCreateWriter();
-        if (writer == null)
-            throw new SimpleCommandExceptionType(getLastError()).create();
-        writer.validate(file, pos1, pos2);
-        IntegratedServer localServer = Minecraft.getInstance().getSingleplayerServer();
-        if (localServer == null || Config.isForceCommand()) {
-            ClientPacketListener connection = player.connection;
-            LOGGER.info("Save file by command...");
-            CompletableFuture.runAsync(new BlockyFileRunnable<>(
-                writer, file, pos1, pos2, axisOrder, feedback,
-                "commands.blockyfile.store.succeed",
-                (b, x, y, z) -> {
-                    try {
-                        connection.sendCommand(Config.getCommand()
-                            .formatted(x, y, z, block2id.get(b.getBlock())));
-                        Thread.sleep(Config.getCommandDelay());
-                        return true;
-                    } catch (InterruptedException ex) {
-                        return false;
-                    }
-                }));
-        } else {
-            ServerLevel level = localServer.getLevel(player.clientLevel.dimension());
-            LOGGER.info("Save file by accessing local ServerLevel...");
-            if (level != null) {
-                localServer.execute(new BlockyFileRunnable<>(
-                    writer, file, pos1, pos2, axisOrder, feedback,
-                    "commands.blockyfile.store.succeed",
-                    (b, x, y, z) -> {
-                        BlockPos pos = new BlockPos(x, y, z);
-                        level.setBlock(pos, b, 2, 0);
-                        return true;
-                    }));
-            }
-        }
-        return Command.SINGLE_SUCCESS;
     }
 
     public static int loadFile(BlockPos pos1, BlockPos pos2, AxisOrder axisOrder, String file, CommandFeedback feedback, LocalPlayer player) throws CommandSyntaxException {
@@ -216,13 +300,52 @@ public final class BlockyFile {
         return Command.SINGLE_SUCCESS;
     }
 
+    public static int storeFile(BlockPos pos1, BlockPos pos2, AxisOrder axisOrder, String file, CommandFeedback feedback, LocalPlayer player) throws CommandSyntaxException {
+        BlockyFileWriter writer = tryCreateWriter();
+        if (writer == null)
+            throw new SimpleCommandExceptionType(getLastError()).create();
+        writer.validate(file, pos1, pos2);
+        IntegratedServer localServer = Minecraft.getInstance().getSingleplayerServer();
+        if (localServer == null || Config.isForceCommand()) {
+            ClientPacketListener connection = player.connection;
+            LOGGER.info("Save file by command...");
+            CompletableFuture.runAsync(new BlockyFileRunnable<>(
+                writer, file, pos1, pos2, axisOrder, feedback,
+                "commands.blockyfile.store.succeed",
+                (b, x, y, z) -> {
+                    try {
+                        connection.sendCommand(Config.getCommand()
+                            .formatted(x, y, z, block2id.get(b.getBlock())));
+                        Thread.sleep(Config.getCommandInterval());
+                        return true;
+                    } catch (InterruptedException ex) {
+                        return false;
+                    }
+                }));
+        } else {
+            ServerLevel level = localServer.getLevel(player.level().dimension());
+            LOGGER.info("Save file by accessing local ServerLevel...");
+            if (level != null) {
+                localServer.execute(new BlockyFileRunnable<>(
+                    writer, file, pos1, pos2, axisOrder, feedback,
+                    "commands.blockyfile.store.succeed",
+                    (b, x, y, z) -> {
+                        BlockPos pos = new BlockPos(x, y, z);
+                        level.setBlock(pos, b, 2, 0);
+                        return true;
+                    }));
+            }
+        }
+        return Command.SINGLE_SUCCESS;
+    }
+
     private static Level getLevel(LocalPlayer player, IntegratedServer localServer) {
         if (localServer != null) {
-            Level level = localServer.getLevel(player.clientLevel.dimension());
+            Level level = localServer.getLevel(player.level().dimension());
             if (level != null)
                 return level;
         }
-        return player.clientLevel;
+        return player.level();
     }
 
     public static Component exceptionAsComponent(Exception e) {
@@ -230,6 +353,16 @@ public final class BlockyFile {
             .literal(e.getClass().getName())
             .append(": ")
             .append(e.getLocalizedMessage());
+    }
+
+    @FunctionalInterface
+    public interface Argument<S> {
+        <T> RequiredArgumentBuilder<S, T> argument(String name, ArgumentType<T> type);
+    }
+
+    @FunctionalInterface
+    public interface Literal<S> {
+        LiteralArgumentBuilder<S> literal(String name);
     }
 
     private record BlockyFileRunnable<ARG>(
@@ -249,13 +382,17 @@ public final class BlockyFile {
                 if (error != null) {
                     feedback.sendError(error);
                 } else {
-                    long blocks = reader.getBlockCounter();
-                    long bytes = reader.getByteCounter();
-                    feedback.sendFeedback(Component.translatable(succeedText, bytes, blocks));
+                    Minecraft.getInstance().execute(this::succeed);
                 }
             } catch (Exception e) {
-                feedback.sendError(exceptionAsComponent(e));
+                Minecraft.getInstance().execute(() -> feedback.sendError(exceptionAsComponent(e)));
             }
+        }
+
+        private void succeed() {
+            long blocks = reader.getBlockCounter();
+            long bytes = reader.getByteCounter();
+            feedback.sendFeedback(Component.translatable(succeedText, bytes, blocks));
         }
     }
 }
