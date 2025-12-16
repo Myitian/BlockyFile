@@ -48,9 +48,9 @@ public final class BlockyFile {
     public static final Path CONFIG_PATH = PlatformUtil.getConfigDirectory().resolve(MOD_ID + ".json");
     public static final boolean CLOTH_CONFIG_EXISTED = isClothConfigExisted();
     public static final Pattern NEWLINE_PATTERN = Pattern.compile("[\\r\\n]");
-    public static final Component RELOAD_CONFIG_SUCCEED = Component.translatable("commands.blockyfile.reload-config.succeed");
-    public static final Component IMPORT_PALETTE_SUCCEED = Component.translatable("commands.blockyfile.import-palette.succeed");
-    public static final Component EXPORT_PALETTE_SUCCEED = Component.translatable("commands.blockyfile.export-palette.succeed");
+    public static final Component CONFIG_RELOAD_SUCCEED = Component.translatable("commands.blockyfile.config.reload.succeed");
+    public static final Component PALETTE_IMPORT_SUCCEED = Component.translatable("commands.blockyfile.palette.import.succeed");
+    public static final Component PALETTE_EXPORT_SUCCEED = Component.translatable("commands.blockyfile.palette.export.succeed");
     public static final DynamicCommandExceptionType INVALID_PALETTE_SIZE_EXCEPTION = new DynamicCommandExceptionType(
         size -> Component.translatable("commands.blockyfile.invalid_palette_size", size));
     public static final DynamicCommandExceptionType FILE_NOT_EXISTS_EXCEPTION = new DynamicCommandExceptionType(
@@ -164,35 +164,37 @@ public final class BlockyFile {
         Function<S, Level> getWorld,
         Function<S, CommandFeedback> getFeedbackWrapper) {
         return literal.literal("blockyfile")
-            .then(argument.argument("mode", new CustomArgument<>(FileOperationMode::parse, FileOperationMode.VALUES))
-                .then(argument.argument("pos1", BlockPosArgumentEx.blockPos())
-                    .then(argument.argument("pos2", BlockPosArgumentEx.blockPos())
-                        .then(argument.argument("axisOrder", new CustomArgument<>(AxisOrder::parse, AxisOrder.VALUES))
-                            .then(argument.argument("filename", StringArgumentType.greedyString())
-                                .executes(context -> {
-                                    S source = context.getSource();
-                                    Level world = getWorld.apply(source);
-                                    return executeCommand(
-                                        context.getArgument("mode", FileOperationMode.class),
-                                        BlockPosArgumentEx.getInWorldBlockPos(context, world, "pos1"),
-                                        BlockPosArgumentEx.getInWorldBlockPos(context, world, "pos2"),
-                                        context.getArgument("axisOrder", AxisOrder.class),
-                                        StringArgumentType.getString(context, "filename"),
-                                        getFeedbackWrapper.apply(source),
-                                        Minecraft.getInstance().player);
-                                }))))))
-            .then(literal.literal("reload-config")
-                .executes(context -> {
-                    File configFile = CONFIG_PATH.toFile();
-                    Config.load(configFile);
-                    loadPalette();
-                    Component lastError = getLastError();
-                    CommandFeedback feedback = getFeedbackWrapper.apply(context.getSource());
-                    if (lastError != null)
-                        throw new SimpleCommandExceptionType(lastError).create();
-                    feedback.sendFeedback(RELOAD_CONFIG_SUCCEED);
-                    return Command.SINGLE_SUCCESS;
-                }))
+            .then(literal.literal("file")
+                .then(argument.argument("mode", new CustomArgument<>(FileOperationMode::parse, FileOperationMode.VALUES))
+                    .then(argument.argument("pos1", BlockPosArgumentEx.blockPos())
+                        .then(argument.argument("pos2", BlockPosArgumentEx.blockPos())
+                            .then(argument.argument("axisOrder", new CustomArgument<>(AxisOrder::parse, AxisOrder.VALUES))
+                                .then(argument.argument("filename", StringArgumentType.greedyString())
+                                    .executes(context -> {
+                                        S source = context.getSource();
+                                        Level world = getWorld.apply(source);
+                                        return executeCommand(
+                                            context.getArgument("mode", FileOperationMode.class),
+                                            BlockPosArgumentEx.getInWorldBlockPos(context, world, "pos1"),
+                                            BlockPosArgumentEx.getInWorldBlockPos(context, world, "pos2"),
+                                            context.getArgument("axisOrder", AxisOrder.class),
+                                            StringArgumentType.getString(context, "filename"),
+                                            getFeedbackWrapper.apply(source),
+                                            Minecraft.getInstance().player);
+                                    })))))))
+            .then(literal.literal("config")
+                .then(literal.literal("reload")
+                    .executes(context -> {
+                        File configFile = CONFIG_PATH.toFile();
+                        Config.load(configFile);
+                        loadPalette();
+                        Component lastError = getLastError();
+                        CommandFeedback feedback = getFeedbackWrapper.apply(context.getSource());
+                        if (lastError != null)
+                            throw new SimpleCommandExceptionType(lastError).create();
+                        feedback.sendFeedback(CONFIG_RELOAD_SUCCEED);
+                        return Command.SINGLE_SUCCESS;
+                    })))
             .then(literal.literal("palette")
                 .then(argument.argument("mode", new CustomArgument<>(PaletteOperationMode::parse, PaletteOperationMode.VALUES))
                     .then(literal.literal("clipboard")
@@ -205,12 +207,12 @@ public final class BlockyFile {
                                     Component lastError = getLastError();
                                     if (lastError != null)
                                         throw new SimpleCommandExceptionType(lastError).create();
-                                    feedback.sendFeedback(IMPORT_PALETTE_SUCCEED);
+                                    feedback.sendFeedback(PALETTE_IMPORT_SUCCEED);
                                 }
                                 case EXPORT -> {
                                     String clipboard = String.join(System.lineSeparator(), Config.getPalette());
                                     Minecraft.getInstance().keyboardHandler.setClipboard(clipboard);
-                                    feedback.sendFeedback(EXPORT_PALETTE_SUCCEED);
+                                    feedback.sendFeedback(PALETTE_EXPORT_SUCCEED);
                                 }
                             }
                             return Command.SINGLE_SUCCESS;
@@ -233,7 +235,7 @@ public final class BlockyFile {
                                         Component lastError = getLastError();
                                         if (lastError != null)
                                             throw new SimpleCommandExceptionType(lastError).create();
-                                        feedback.sendFeedback(IMPORT_PALETTE_SUCCEED);
+                                        feedback.sendFeedback(PALETTE_IMPORT_SUCCEED);
                                     }
                                     case EXPORT -> {
                                         if (Files.exists(p))
@@ -243,7 +245,7 @@ public final class BlockyFile {
                                         } catch (IOException e) {
                                             throw new SimpleCommandExceptionType(exceptionAsComponent(e)).create();
                                         }
-                                        feedback.sendFeedback(EXPORT_PALETTE_SUCCEED);
+                                        feedback.sendFeedback(PALETTE_EXPORT_SUCCEED);
                                     }
                                 }
                                 return Command.SINGLE_SUCCESS;

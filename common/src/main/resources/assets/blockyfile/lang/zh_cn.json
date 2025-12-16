@@ -16,9 +16,9 @@
 
   "commands.blockyfile.store.succeed": "文件储存成功！（%d字节，%d方块）",
   "commands.blockyfile.load.succeed": "文件加载成功！（%d字节，%d方块）",
-  "commands.blockyfile.reload-config.succeed": "配置重新加载成功！",
-  "commands.blockyfile.import-palette.succeed": "调色板导入成功！",
-  "commands.blockyfile.export-palette.succeed": "调色板导出成功！",
+  "commands.blockyfile.config.reload.succeed": "配置重新加载成功！",
+  "commands.blockyfile.palette.import.succeed": "调色板导入成功！",
+  "commands.blockyfile.palette.export.succeed": "调色板导出成功！",
   "commands.blockyfile.invalid_palette_size": "无效的调色板尺寸：%d",
   "commands.blockyfile.invalid_identifier": "无效的标识符：%s",
   "commands.blockyfile.duplicate_identifier": "重复的标识符：%s",

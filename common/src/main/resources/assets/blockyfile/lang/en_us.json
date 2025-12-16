@@ -16,9 +16,9 @@
 
   "commands.blockyfile.store.succeed": "File stored successfully! (%d bytes, %d blocks)",
   "commands.blockyfile.load.succeed": "File loaded successfully! (%d bytes, %d blocks)",
-  "commands.blockyfile.reload-config.succeed": "Configuration reloaded successfully!",
-  "commands.blockyfile.import-palette.succeed": "Palette imported successfully!",
-  "commands.blockyfile.export-palette.succeed": "Palette exported successfully!",
+  "commands.blockyfile.config.reload.succeed": "Configuration reloaded successfully!",
+  "commands.blockyfile.palette.import.succeed": "Palette imported successfully!",
+  "commands.blockyfile.palette.export.succeed": "Palette exported successfully!",
   "commands.blockyfile.invalid_palette_size": "Invalid palette size: %d",
   "commands.blockyfile.invalid_identifier": "Invalid identifier: %s",
   "commands.blockyfile.duplicate_identifier": "Duplicate identifier: %s",
