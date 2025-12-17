@@ -105,6 +105,7 @@ public record CommandBuilder<S>(
             .map(BlockState::getBlock)
             .map(BlockyFile.block2id::get)
             .forEachOrdered(palette::add);
+        BlockyFile.saveConfig();
         feedback.sendFeedback(BlockyFile.translatable_PALETTE_IMPORT_SUCCEED());
     }
 
