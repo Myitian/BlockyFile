@@ -10,6 +10,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.network.chat.Component;
 import net.myitian.blockyfile.BlockyFile;
+import net.myitian.blockyfile.CommandBuilder;
 import net.myitian.blockyfile.CommandFeedback;
 
 public final class BlockyFileFabricClient implements ClientModInitializer {
@@ -18,7 +19,7 @@ public final class BlockyFileFabricClient implements ClientModInitializer {
     }
 
     private static void onClientCommandRegister(CommandDispatcher<FabricClientCommandSource> dispatcher, CommandBuildContext registryAccess) {
-        dispatcher.register(BlockyFile.buildCommandArguments(
+        dispatcher.register(new CommandBuilder<>(
             ClientCommandManager::literal,
             ClientCommandManager::argument,
             FabricClientCommandSource::getWorld,
@@ -32,7 +33,7 @@ public final class BlockyFileFabricClient implements ClientModInitializer {
                 public void sendError(Component msg) {
                     source.sendError(msg);
                 }
-            }));
+            }).build());
     }
 
     @Override

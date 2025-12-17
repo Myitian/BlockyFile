@@ -1,34 +1,33 @@
 package net.myitian.blockyfile;
 
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import it.unimi.dsi.fastutil.objects.AbstractObject2IntMap;
-import net.minecraft.world.level.block.Block;
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
 
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-public final class BlockyFileReader extends BlockyFileHandler<OutputStream, BlockyFileReader.Supplier> {
-    private final AbstractObject2IntMap<Block> block2index;
+public final class BlockyFileReader<T> extends BlockyFileHandler<OutputStream, BlockyFileReader.Supplier<T>> {
+    private final Object2IntMap<T> unit2index;
 
-    public BlockyFileReader(AbstractObject2IntMap<Block> block2index) {
-        super(BlockyFile.getPaletteBitCount(block2index.size()));
-        this.block2index = block2index;
+    public BlockyFileReader(Object2IntMap<T> unit2index) {
+        super(BlockyFile.getPaletteBitCount(unit2index.size()));
+        this.unit2index = unit2index;
+        if (debug) {
+            BlockyFile.LOGGER.info("[R] <init>, size = {}, bitPerUnit = {}",
+                unit2index.size(), bitPerUnit);
+        }
     }
 
     public void validate(String path) throws CommandSyntaxException {
-        if (bitPerBlock == 0)
-            throw BlockyFile.INVALID_PALETTE_SIZE_EXCEPTION.create(block2index.size());
+        if (bitPerUnit == 0) {
+            throw BlockyFile.INVALID_PALETTE_SIZE_EXCEPTION.create(unit2index.size());
+        }
         Path p = Path.of(path);
-        if (Files.exists(p))
+        if (Files.exists(p)) {
             throw BlockyFile.FILE_EXISTS_EXCEPTION.create(path);
-    }
-
-    @Override
-    public OutputStream createStream(String path) throws Exception {
-        return new FileOutputStream(path);
+        }
     }
 
     /**
@@ -38,18 +37,19 @@ public final class BlockyFileReader extends BlockyFileHandler<OutputStream, Bloc
     protected boolean next(
         OutputStream stream,
         int x, int y, int z,
-        Supplier supplier) throws IOException {
-        Block block = supplier.apply(x, y, z);
-        int read = block2index.getInt(block);
-        if (read == -1)
+        Supplier<T> supplier) throws IOException {
+        T unit = supplier.apply(x, y, z);
+        int read = unit2index.getInt(unit);
+        if (read == unit2index.defaultReturnValue()) {
             return true;
-        if (bitPerBlock == 8) {
+        }
+        if (bitPerUnit == 8) {
             stream.write(read);
-            byteCounter++;
+            byteCount++;
         } else {
-            int mask = (1 << bitPerBlock) - 1;
-            buffer |= (read & mask) << (16 - length - bitPerBlock);
-            length += bitPerBlock;
+            int mask = (1 << bitPerUnit) - 1;
+            buffer |= (read & mask) << (16 - length - bitPerUnit);
+            length += bitPerUnit;
             if (length >= 8) {
                 stream.write((buffer & 0xFF00) >> 8);
                 if (debug) {
@@ -61,17 +61,17 @@ public final class BlockyFileReader extends BlockyFileHandler<OutputStream, Bloc
                         toGroupedBinaryString(masked),
                         toGroupedBinaryString(value));
                 }
-                byteCounter++;
+                byteCount++;
                 buffer <<= 8;
                 length -= 8;
             }
         }
-        blockCounter++;
+        unitCount++;
         return false;
     }
 
     @FunctionalInterface
-    public interface Supplier {
-        Block apply(int x, int y, int z);
+    public interface Supplier<T> {
+        T apply(int x, int y, int z);
     }
 }

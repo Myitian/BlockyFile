@@ -11,23 +11,17 @@ import net.minecraft.world.level.block.Blocks;
 import net.myitian.blockyfile.BlockyFile;
 import net.myitian.blockyfile.config.Config;
 
-import java.io.File;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 
 public final class ConfigScreen {
     public static Screen buildConfigScreen(Screen parent) {
-        File configFile = BlockyFile.CONFIG_PATH.toFile();
-        Config.load(configFile);
-        BlockyFile.loadPalette();
+        BlockyFile.loadConfig();
         ConfigBuilder builder = ConfigBuilder.create()
             .setParentScreen(parent)
             .setTitle(Component.translatable("title.blockyfile.config"))
-            .setSavingRunnable(() -> {
-                Config.save(configFile);
-                BlockyFile.loadPalette();
-            });
+            .setSavingRunnable(BlockyFile::saveConfig);
         ConfigEntryBuilder entryBuilder = builder.entryBuilder();
         createCommandCategory(builder, entryBuilder);
         createPaletteCategory(builder, entryBuilder);

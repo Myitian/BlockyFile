@@ -1,6 +1,5 @@
 package net.myitian.blockyfile.forge;
 
-import com.mojang.brigadier.CommandDispatcher;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.Component;
@@ -10,6 +9,7 @@ import net.minecraftforge.eventbus.api.listener.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.myitian.blockyfile.BlockyFile;
+import net.myitian.blockyfile.CommandBuilder;
 import net.myitian.blockyfile.CommandFeedback;
 
 @Mod(BlockyFile.MOD_ID)
@@ -22,8 +22,7 @@ public final class BlockyFileForgeClient {
 
     @SubscribeEvent
     public static void onClientCommandRegister(RegisterClientCommandsEvent event) {
-        CommandDispatcher<CommandSourceStack> dispatcher = event.getDispatcher();
-        dispatcher.register(BlockyFile.buildCommandArguments(
+        event.getDispatcher().register(new CommandBuilder<>(
             Commands::literal,
             Commands::argument,
             CommandSourceStack::getUnsidedLevel,
@@ -37,6 +36,6 @@ public final class BlockyFileForgeClient {
                 public void sendError(Component msg) {
                     source.sendFailure(msg);
                 }
-            }));
+            }).build());
     }
 }

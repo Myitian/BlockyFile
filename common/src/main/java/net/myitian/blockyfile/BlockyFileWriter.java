@@ -3,47 +3,44 @@ package net.myitian.blockyfile;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import net.minecraft.core.BlockPos;
-import net.minecraft.world.level.block.state.BlockState;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 
-public final class BlockyFileWriter extends BlockyFileHandler<InputStream, BlockyFileWriter.Consumer> {
-    private final List<BlockState> index2block;
+public final class BlockyFileWriter<T> extends BlockyFileHandler<InputStream, BlockyFileWriter.Consumer<T>> {
+    private final List<T> index2unit;
     private boolean eof = false;
 
-    public BlockyFileWriter(List<BlockState> index2block) {
-        super(BlockyFile.getPaletteBitCount(index2block.size()));
-        this.index2block = index2block;
+    public BlockyFileWriter(List<T> index2unit) {
+        super(BlockyFile.getPaletteBitCount(index2unit.size()));
+        this.index2unit = index2unit;
+        if (debug) {
+            BlockyFile.LOGGER.info("[W] <init>, size = {}, bitPerUnit = {}",
+                index2unit.size(), bitPerUnit);
+        }
     }
 
     public void validate(String path, BlockPos pos1, BlockPos pos2) throws CommandSyntaxException {
-        if (bitPerBlock == 0)
-            throw BlockyFile.INVALID_PALETTE_SIZE_EXCEPTION.create(index2block.size());
+        if (bitPerUnit == 0)
+            throw BlockyFile.INVALID_PALETTE_SIZE_EXCEPTION.create(index2unit.size());
         Path p = Path.of(path);
         if (!(Files.exists(p) && Files.isRegularFile(p)))
             throw BlockyFile.FILE_NOT_EXISTS_EXCEPTION.create(path);
         long xDiff = Math.abs((long) pos1.getX() - (long) pos2.getX()) + 1;
         long yDiff = Math.abs((long) pos1.getY() - (long) pos2.getY()) + 1;
         long zDiff = Math.abs((long) pos1.getZ() - (long) pos2.getZ()) + 1;
-        long maxSize = xDiff * yDiff * zDiff * bitPerBlock / 8;
+        long maxSize = xDiff * yDiff * zDiff * bitPerUnit / 8;
         try {
             long realSize = Files.size(p);
-            if (realSize > maxSize)
+            if (realSize > maxSize) {
                 throw BlockyFile.FILE_TOO_LARGE_EXCEPTION.create(realSize, maxSize);
+            }
         } catch (IOException e) {
             throw new SimpleCommandExceptionType(BlockyFile.exceptionAsComponent(e)).create();
         }
-    }
-
-    @Override
-    public InputStream createStream(String path) throws FileNotFoundException {
-        return new FileInputStream(path);
     }
 
     /**
@@ -53,37 +50,42 @@ public final class BlockyFileWriter extends BlockyFileHandler<InputStream, Block
     protected boolean next(
         InputStream stream,
         int x, int y, int z,
-        Consumer consumer) throws IOException {
-        if (bitPerBlock == 8) {
+        Consumer<T> consumer) throws IOException {
+        if (bitPerUnit == 8) {
             int read = stream.read();
-            if (read < 0)
+            if (read < 0) {
                 return true;
-            byteCounter++;
-            BlockState blockState = index2block.get(read);
-            if (!consumer.apply(blockState, x, y, z))
+            }
+            byteCount++;
+            T unit = index2unit.get(read);
+            if (consumer.apply(unit, x, y, z)) {
                 return true;
-            blockCounter++;
+            }
+            unitCount++;
         } else {
             if (eof) { // Already EOF
-                if (length <= 0)
+                if (length <= 0) {
                     return true; // No more data
-            } else if (length < bitPerBlock) {
+                }
+            } else if (length < bitPerUnit) {
                 int read = stream.read();
                 if (read >= 0) { // Normal
                     buffer |= read << (8 - length);
                     length += 8;
-                    byteCounter++;
+                    byteCount++;
                 } else { // Reached EOF
                     eof = true;
-                    if (length <= 0)
+                    if (length <= 0) {
                         return true; // No more data
+                    }
                 }
             }
-            int offset = 16 - bitPerBlock;
-            int mask = ((1 << bitPerBlock) - 1) << offset;
-            BlockState blockState = index2block.get((buffer & mask) >> offset);
-            if (consumer.apply(blockState, x, y, z))
+            int offset = 16 - bitPerUnit;
+            int mask = ((1 << bitPerUnit) - 1) << offset;
+            T unit = index2unit.get((buffer & mask) >> offset);
+            if (consumer.apply(unit, x, y, z)) {
                 return true; // Failed to execute
+            }
             if (debug) {
                 int masked = buffer & mask;
                 int value = masked >> offset;
@@ -93,18 +95,18 @@ public final class BlockyFileWriter extends BlockyFileHandler<InputStream, Block
                     toGroupedBinaryString(masked),
                     toGroupedBinaryString(value));
             }
-            blockCounter++;
-            buffer <<= bitPerBlock;
-            length -= bitPerBlock;
+            unitCount++;
+            buffer <<= bitPerUnit;
+            length -= bitPerUnit;
         }
         return false;
     }
 
     @FunctionalInterface
-    public interface Consumer {
+    public interface Consumer<T> {
         /**
          * @return true if failed
          */
-        boolean apply(BlockState blockState, int x, int y, int z);
+        boolean apply(T unit, int x, int y, int z);
     }
 }

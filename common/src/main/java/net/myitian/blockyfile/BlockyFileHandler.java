@@ -6,16 +6,16 @@ import net.myitian.blockyfile.config.Config;
 
 import java.io.IOException;
 
-public abstract class BlockyFileHandler<STREAM extends AutoCloseable, ARG> {
+public abstract class BlockyFileHandler<STREAM, ARG> {
     protected final boolean debug = Config.isDebug();
-    protected final int bitPerBlock;
-    protected long blockCounter = 0;
-    protected long byteCounter = 0;
+    protected final int bitPerUnit;
+    protected long unitCount = 0;
+    protected long byteCount = 0;
     protected int buffer = 0;
     protected int length = 0;
 
-    protected BlockyFileHandler(int bitPerBlock) {
-        this.bitPerBlock = bitPerBlock;
+    protected BlockyFileHandler(int bitPerUnit) {
+        this.bitPerUnit = bitPerUnit;
     }
 
     protected static String toGroupedBinaryString(int value) {
@@ -59,23 +59,21 @@ public abstract class BlockyFileHandler<STREAM extends AutoCloseable, ARG> {
         return new String(buffer);
     }
 
-    public long getBlockCounter() {
-        return blockCounter;
+    public long getUnitCount() {
+        return unitCount;
     }
 
-    public long getByteCounter() {
-        return byteCounter;
+    public long getByteCount() {
+        return byteCount;
     }
-
-    public abstract STREAM createStream(String path) throws Exception;
 
     public Component execute(
-        String path,
+        STREAM stream,
         BlockPos pos1,
         BlockPos pos2,
         AxisOrder axisOrder,
-        ARG consumer) {
-        try (STREAM stream = createStream(path)) {
+        ARG arg) {
+        try {
             int x1 = pos1.getX();
             int y1 = pos1.getY();
             int z1 = pos1.getZ();
@@ -94,42 +92,42 @@ public abstract class BlockyFileHandler<STREAM extends AutoCloseable, ARG> {
                     for (int z = z1; z != z2; z += zDirection)
                         for (int y = y1; y != y2; y += yDirection)
                             for (int x = x1; x != x2; x += xDirection)
-                                if (next(stream, x, y, z, consumer))
+                                if (next(stream, x, y, z, arg))
                                     break LOOP;
                 }
                 case XZY -> {
                     for (int y = y1; y != y2; y += yDirection)
                         for (int z = z1; z != z2; z += zDirection)
                             for (int x = x1; x != x2; x += xDirection)
-                                if (next(stream, x, y, z, consumer))
+                                if (next(stream, x, y, z, arg))
                                     break LOOP;
                 }
                 case YXZ -> {
                     for (int z = z1; z != z2; z += zDirection)
                         for (int x = x1; x != x2; x += xDirection)
                             for (int y = y1; y != y2; y += yDirection)
-                                if (next(stream, x, y, z, consumer))
+                                if (next(stream, x, y, z, arg))
                                     break LOOP;
                 }
                 case YZX -> {
                     for (int x = x1; x != x2; x += xDirection)
                         for (int z = z1; z != z2; z += zDirection)
                             for (int y = y1; y != y2; y += yDirection)
-                                if (next(stream, x, y, z, consumer))
+                                if (next(stream, x, y, z, arg))
                                     break LOOP;
                 }
                 case ZXY -> {
                     for (int y = y1; y != y2; y += yDirection)
                         for (int x = x1; x != x2; x += xDirection)
                             for (int z = z1; z != z2; z += zDirection)
-                                if (next(stream, x, y, z, consumer))
+                                if (next(stream, x, y, z, arg))
                                     break LOOP;
                 }
                 case ZYX -> {
                     for (int x = x1; x != x2; x += xDirection)
                         for (int y = y1; y != y2; y += yDirection)
                             for (int z = z1; z != z2; z += zDirection)
-                                if (next(stream, x, y, z, consumer))
+                                if (next(stream, x, y, z, arg))
                                     break LOOP;
                 }
                 default -> throw new AssertionError();
