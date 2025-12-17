@@ -21,17 +21,17 @@ ext {
 }
 
 architectury {
-    minecraft = rootProject.main_minecraft_version
+    minecraft = rootProject.minecraft_version
 }
 
 subprojects {
     apply plugin: "dev.architectury.loom"
 
     dependencies {
-        minecraft "com.mojang:minecraft:${project.main_minecraft_version}"
+        minecraft "com.mojang:minecraft:${project.minecraft_version}"
         mappings loom.layered {
             officialMojangMappings()
-            parchment("org.parchmentmc.data:parchment-${project.main_parchment_mappings}@zip")
+            parchment("org.parchmentmc.data:parchment-${project.parchment_mappings}@zip")
         }
     }
 }

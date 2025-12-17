@@ -1,6 +1,11 @@
 # BlockyFile
 
-A client-side mod that uses blocks to store files in the Minecraft world. Supports Minecraft 1.21.4~1.21.11, Fabric/NeoForge/Forge.
+A client-side mod that uses blocks to store files in the Minecraft world.
+
+Supported Minecraft versions:
+
+- Fabric/NeoForge 1.21.4~1.21.11
+- Forge 1.21.6~1.21.11
 
 In-game configuration is supported when Cloth Config is installed.
 

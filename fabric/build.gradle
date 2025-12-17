@@ -31,7 +31,7 @@ dependencies {
     modImplementation "net.fabricmc:fabric-loader:${project.fabric_loader_version}"
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
     modImplementation "com.terraformersmc:modmenu:${project.mod_menu_version}"
-    modImplementation "me.shedaniel.cloth:cloth-config-fabric:${project.main_cloth_config_version}"
+    modImplementation "me.shedaniel.cloth:cloth-config-fabric:${project.cloth_config_version}"
 
     common(project(path: ":common", configuration: "namedElements")) { transitive false }
     shadowCommon(project(path: ":common", configuration: "transformProductionFabric")) { transitive false }
@@ -66,15 +66,4 @@ sourcesJar {
     def commonSources = project(":common").sourcesJar
     dependsOn commonSources
     from commonSources.archiveFile.map { zipTree(it) }
-}
-
-publishing {
-    publications {
-        mavenFabric(MavenPublication) {
-            artifactId = rootProject.mod_id + "-" + project.name
-            from components.java
-        }
-    }
-    repositories {
-    }
 }
