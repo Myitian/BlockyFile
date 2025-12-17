@@ -18,6 +18,47 @@ public abstract class BlockyFileHandler<STREAM extends AutoCloseable, ARG> {
         this.bitPerBlock = bitPerBlock;
     }
 
+    protected static String toGroupedBinaryString(int value) {
+        char[] buffer = {
+            (char) (((value >> 0x1F) & 1) + '0'),
+            (char) (((value >> 0x1E) & 1) + '0'),
+            (char) (((value >> 0x1D) & 1) + '0'),
+            (char) (((value >> 0x1C) & 1) + '0'),
+            (char) (((value >> 0x1B) & 1) + '0'),
+            (char) (((value >> 0x1A) & 1) + '0'),
+            (char) (((value >> 0x19) & 1) + '0'),
+            (char) (((value >> 0x18) & 1) + '0'),
+            '_',
+            (char) (((value >> 0x17) & 1) + '0'),
+            (char) (((value >> 0x16) & 1) + '0'),
+            (char) (((value >> 0x15) & 1) + '0'),
+            (char) (((value >> 0x14) & 1) + '0'),
+            (char) (((value >> 0x13) & 1) + '0'),
+            (char) (((value >> 0x12) & 1) + '0'),
+            (char) (((value >> 0x11) & 1) + '0'),
+            (char) (((value >> 0x10) & 1) + '0'),
+            '_',
+            (char) (((value >> 0x0F) & 1) + '0'),
+            (char) (((value >> 0x0E) & 1) + '0'),
+            (char) (((value >> 0x0D) & 1) + '0'),
+            (char) (((value >> 0x0C) & 1) + '0'),
+            (char) (((value >> 0x0B) & 1) + '0'),
+            (char) (((value >> 0x0A) & 1) + '0'),
+            (char) (((value >> 0x09) & 1) + '0'),
+            (char) (((value >> 0x08) & 1) + '0'),
+            '_',
+            (char) (((value >> 0x07) & 1) + '0'),
+            (char) (((value >> 0x06) & 1) + '0'),
+            (char) (((value >> 0x05) & 1) + '0'),
+            (char) (((value >> 0x04) & 1) + '0'),
+            (char) (((value >> 0x03) & 1) + '0'),
+            (char) (((value >> 0x02) & 1) + '0'),
+            (char) (((value >> 0x01) & 1) + '0'),
+            (char) ((value & 1) + '0'),
+        };
+        return new String(buffer);
+    }
+
     public long getBlockCounter() {
         return blockCounter;
     }

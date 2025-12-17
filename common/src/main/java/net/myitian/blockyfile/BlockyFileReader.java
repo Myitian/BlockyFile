@@ -3,7 +3,6 @@ package net.myitian.blockyfile;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import it.unimi.dsi.fastutil.objects.AbstractObject2IntMap;
 import net.minecraft.world.level.block.Block;
-import org.apache.commons.lang3.StringUtils;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -56,11 +55,11 @@ public final class BlockyFileReader extends BlockyFileHandler<OutputStream, Bloc
                 if (debug) {
                     int masked = buffer & 0xFF00;
                     int value = masked >> 8;
-                    BlockyFile.LOGGER.info("[R] pos = ({}, {}, {}), buffer = 0b{}, masked = 0b{}, value = 0b{}",
+                    BlockyFile.LOGGER.info("[R] pos = ({}, {}, {}), buffer = 0b_{}, masked = 0b_{}, value = 0b_{}",
                         x, y, z,
-                        StringUtils.leftPad(Integer.toBinaryString(buffer), 32, '0'),
-                        StringUtils.leftPad(Integer.toBinaryString(masked), 32, '0'),
-                        StringUtils.leftPad(Integer.toBinaryString(value), 32, '0'));
+                        toGroupedBinaryString(buffer),
+                        toGroupedBinaryString(masked),
+                        toGroupedBinaryString(value));
                 }
                 byteCounter++;
                 buffer <<= 8;

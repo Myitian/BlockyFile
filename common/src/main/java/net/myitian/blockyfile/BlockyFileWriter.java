@@ -4,7 +4,6 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.state.BlockState;
-import org.apache.commons.lang3.StringUtils;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -88,11 +87,11 @@ public final class BlockyFileWriter extends BlockyFileHandler<InputStream, Block
             if (debug) {
                 int masked = buffer & mask;
                 int value = masked >> offset;
-                BlockyFile.LOGGER.info("[W] pos = ({}, {}, {}), buffer = 0b{}, masked = 0b{}, value = 0b{}",
+                BlockyFile.LOGGER.info("[W] pos = ({}, {}, {}), buffer = 0b_{}, masked = 0b_{}, value = 0b_{}",
                     x, y, z,
-                    StringUtils.leftPad(Integer.toBinaryString(buffer), 32, '0'),
-                    StringUtils.leftPad(Integer.toBinaryString(masked), 32, '0'),
-                    StringUtils.leftPad(Integer.toBinaryString(value), 32, '0'));
+                    toGroupedBinaryString(buffer),
+                    toGroupedBinaryString(masked),
+                    toGroupedBinaryString(value));
             }
             blockCounter++;
             buffer <<= bitPerBlock;
