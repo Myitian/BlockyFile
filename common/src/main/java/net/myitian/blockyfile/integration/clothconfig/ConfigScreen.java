@@ -31,6 +31,7 @@ public final class ConfigScreen {
         ConfigEntryBuilder entryBuilder = builder.entryBuilder();
         createCommandCategory(builder, entryBuilder);
         createPaletteCategory(builder, entryBuilder);
+        createMiscellaneousCategory(builder, entryBuilder);
         return builder.build();
     }
 
@@ -89,6 +90,17 @@ public final class ConfigScreen {
                 }
                 return Optional.empty();
             })
+            .build());
+    }
+
+    private static void createMiscellaneousCategory(ConfigBuilder builder, ConfigEntryBuilder entryBuilder) {
+        ConfigCategory category = builder.getOrCreateCategory(Component.translatable("category.blockyfile.miscellaneous"));
+        category.addEntry(entryBuilder.startBooleanToggle(
+                Component.translatable("option.blockyfile.debug"),
+                Config.isDebug())
+            .setDefaultValue(Config::defaultDebug)
+            .setTooltip(Component.translatable("option.blockyfile.debug.tooltip"))
+            .setSaveConsumer(Config::setDebug)
             .build());
     }
 }

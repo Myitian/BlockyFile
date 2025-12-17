@@ -275,24 +275,29 @@ public final class Config {
     );
     private static final List<String> palette = new ArrayList<>(defaultPalette);
 
-    private static final boolean defaultForceCommand = false;
+    private static final boolean defaultDebug = false;
     private static final String defaultCommand = "setblock %d %d %d %s";
+    private static final boolean defaultForceCommand = false;
     private static final long defaultCommandInterval = 50;
-
-    private static boolean forceCommand = defaultForceCommand;
+    private static boolean debug = defaultDebug;
     private static String command = defaultCommand;
+    private static boolean forceCommand = defaultForceCommand;
     private static long commandInterval = defaultCommandInterval;
 
     static {
         registerCodec(CODEC.getFieldMap());
     }
 
-    public static List<String> defaultPalette() {
-        return defaultPalette;
+    public static boolean defaultDebug() {
+        return defaultDebug;
     }
 
-    public static List<String> getPalette() {
-        return palette;
+    public static boolean isDebug() {
+        return debug;
+    }
+
+    public static void setDebug(boolean debug) {
+        Config.debug = debug;
     }
 
     public static String defaultCommand() {
@@ -331,6 +336,14 @@ public final class Config {
         Config.commandInterval = commandInterval;
     }
 
+    public static List<String> defaultPalette() {
+        return defaultPalette;
+    }
+
+    public static List<String> getPalette() {
+        return palette;
+    }
+
     public static void registerCodec(Map<String, Pair<ConfigCodec.ConsumerWithIOException<JsonReader>, ConfigCodec.ConsumerWithIOException<JsonWriter>>> map) {
         map.put("command", Pair.of(
             reader -> setCommand(reader.nextString()),
@@ -344,6 +357,9 @@ public final class Config {
         map.put("palette", Pair.of(
             reader -> ConfigCodec.readStringList(reader, getPalette(), true),
             writer -> ConfigCodec.writeStringList(writer, getPalette())));
+        map.put("debug", Pair.of(
+            reader -> setDebug(reader.nextBoolean()),
+            writer -> writer.value(isDebug())));
     }
 
     public static boolean load(File configFile) {

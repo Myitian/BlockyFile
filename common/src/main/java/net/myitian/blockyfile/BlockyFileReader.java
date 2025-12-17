@@ -3,6 +3,7 @@ package net.myitian.blockyfile;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import it.unimi.dsi.fastutil.objects.AbstractObject2IntMap;
 import net.minecraft.world.level.block.Block;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -51,19 +52,16 @@ public final class BlockyFileReader extends BlockyFileHandler<OutputStream, Bloc
             buffer |= (read & mask) << (16 - length - bitPerBlock);
             length += bitPerBlock;
             if (length >= 8) {
-                int b = (buffer & 0xFF00) >> 8;
-                stream.write(b);
-                /*
-                 * #if DEBUG:
-                 * int masked = buffer & 0xFF00;
-                 * int value = masked >> 8;
-                 * BlockyFile.LOGGER.info("[R] pos = ({}, {}, {}), buffer = 0b{}, masked = 0b{}, value = 0b{}",
-                 *     x, y, z,
-                 *     StringUtils.leftPad(Integer.toBinaryString(buffer), 32, '0'),
-                 *     StringUtils.leftPad(Integer.toBinaryString(masked), 32, '0'),
-                 *     StringUtils.leftPad(Integer.toBinaryString(value), 32, '0'));
-                 * #endif
-                 */
+                stream.write((buffer & 0xFF00) >> 8);
+                if (debug) {
+                    int masked = buffer & 0xFF00;
+                    int value = masked >> 8;
+                    BlockyFile.LOGGER.info("[R] pos = ({}, {}, {}), buffer = 0b{}, masked = 0b{}, value = 0b{}",
+                        x, y, z,
+                        StringUtils.leftPad(Integer.toBinaryString(buffer), 32, '0'),
+                        StringUtils.leftPad(Integer.toBinaryString(masked), 32, '0'),
+                        StringUtils.leftPad(Integer.toBinaryString(value), 32, '0'));
+                }
                 byteCounter++;
                 buffer <<= 8;
                 length -= 8;

@@ -58,7 +58,7 @@ public final class BlockyFile {
     public static final DynamicCommandExceptionType FILE_EXISTS_EXCEPTION = new DynamicCommandExceptionType(
         path -> Component.translatable("argument.blockyfile.file.exists", path));
     public static final Dynamic2CommandExceptionType FILE_TOO_LARGE_EXCEPTION = new Dynamic2CommandExceptionType(
-        (realSize, maxSize) -> Component.translatable("argument.blockyfile.file.not_exists", realSize, maxSize));
+        (realSize, maxSize) -> Component.translatable("argument.blockyfile.file.too_large", realSize, maxSize));
 
     private static final ArrayList<BlockState> index2block = new ArrayList<>();
     private static final Object2IntOpenHashMap<Block> block2index = new Object2IntOpenHashMap<>();
@@ -319,9 +319,9 @@ public final class BlockyFile {
                         connection.sendCommand(Config.getCommand()
                             .formatted(x, y, z, block2id.get(b.getBlock())));
                         Thread.sleep(Config.getCommandInterval());
-                        return true;
-                    } catch (InterruptedException ex) {
                         return false;
+                    } catch (InterruptedException ex) {
+                        return true;
                     }
                 }));
         } else {
@@ -334,7 +334,7 @@ public final class BlockyFile {
                     (b, x, y, z) -> {
                         BlockPos pos = new BlockPos(x, y, z);
                         level.setBlock(pos, b, 2, 0);
-                        return true;
+                        return false;
                     }));
             }
         }

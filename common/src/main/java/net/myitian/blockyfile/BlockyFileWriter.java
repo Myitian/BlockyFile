@@ -4,6 +4,7 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.state.BlockState;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -82,19 +83,17 @@ public final class BlockyFileWriter extends BlockyFileHandler<InputStream, Block
             int offset = 16 - bitPerBlock;
             int mask = ((1 << bitPerBlock) - 1) << offset;
             BlockState blockState = index2block.get((buffer & mask) >> offset);
-            if (!consumer.apply(blockState, x, y, z))
+            if (consumer.apply(blockState, x, y, z))
                 return true; // Failed to execute
-            /*
-             * #if DEBUG:
-             * int masked = buffer & mask;
-             * int value = masked >> offset;
-             * BlockyFile.LOGGER.info("[W] pos = ({}, {}, {}), buffer = 0b{}, masked = 0b{}, value = 0b{}",
-             *     x, y, z,
-             *     StringUtils.leftPad(Integer.toBinaryString(buffer), 32, '0'),
-             *     StringUtils.leftPad(Integer.toBinaryString(masked), 32, '0'),
-             *     StringUtils.leftPad(Integer.toBinaryString(value), 32, '0'));
-             * #endif
-             */
+            if (debug) {
+                int masked = buffer & mask;
+                int value = masked >> offset;
+                BlockyFile.LOGGER.info("[W] pos = ({}, {}, {}), buffer = 0b{}, masked = 0b{}, value = 0b{}",
+                    x, y, z,
+                    StringUtils.leftPad(Integer.toBinaryString(buffer), 32, '0'),
+                    StringUtils.leftPad(Integer.toBinaryString(masked), 32, '0'),
+                    StringUtils.leftPad(Integer.toBinaryString(value), 32, '0'));
+            }
             blockCounter++;
             buffer <<= bitPerBlock;
             length -= bitPerBlock;
@@ -104,6 +103,9 @@ public final class BlockyFileWriter extends BlockyFileHandler<InputStream, Block
 
     @FunctionalInterface
     public interface Consumer {
+        /**
+         * @return true if failed
+         */
         boolean apply(BlockState blockState, int x, int y, int z);
     }
 }

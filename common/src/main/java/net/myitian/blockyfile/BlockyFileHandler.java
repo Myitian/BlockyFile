@@ -2,10 +2,12 @@ package net.myitian.blockyfile;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
+import net.myitian.blockyfile.config.Config;
 
 import java.io.IOException;
 
 public abstract class BlockyFileHandler<STREAM extends AutoCloseable, ARG> {
+    protected final boolean debug = Config.isDebug();
     protected final int bitPerBlock;
     protected long blockCounter = 0;
     protected long byteCounter = 0;
