@@ -70,7 +70,7 @@ public final class BlockyFileWriter extends BlockyFileHandler<InputStream, Block
             } else if (length < bitPerBlock) {
                 int read = stream.read();
                 if (read >= 0) { // Normal
-                    buffer |= read << 8;
+                    buffer |= read << (8 - length);
                     length += 8;
                     byteCounter++;
                 } else { // Reached EOF

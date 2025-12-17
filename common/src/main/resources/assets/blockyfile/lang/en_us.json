@@ -13,6 +13,9 @@
   "category.blockyfile.palette": "Palette",
   "option.blockyfile.palette": "Palette",
   "option.blockyfile.palette.tooltip": "The palette used to represent file data.\nIts length should be 2, 4, 8, 16, 32, 64, 128, or 256.",
+  "category.blockyfile.miscellaneous": "Miscellaneous",
+  "option.blockyfile.debug": "Debug mode",
+  "option.blockyfile.debug.tooltip": "Print debug messages in log.",
 
   "commands.blockyfile.store.succeed": "File stored successfully! (%d bytes, %d blocks)",
   "commands.blockyfile.load.succeed": "File loaded successfully! (%d bytes, %d blocks)",

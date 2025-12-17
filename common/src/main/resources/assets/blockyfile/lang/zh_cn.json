@@ -13,6 +13,9 @@
   "category.blockyfile.palette": "调色板",
   "option.blockyfile.palette": "调色板",
   "option.blockyfile.palette.tooltip": "用于表示文件数据的调色板。\n其长度应为2、4、8、16、32、64、128或256。",
+  "category.blockyfile.miscellaneous": "杂项",
+  "option.blockyfile.debug": "调试模式",
+  "option.blockyfile.debug.tooltip": "在日志中打印调试信息。",
 
   "commands.blockyfile.store.succeed": "文件储存成功！（%d字节，%d方块）",
   "commands.blockyfile.load.succeed": "文件加载成功！（%d字节，%d方块）",
