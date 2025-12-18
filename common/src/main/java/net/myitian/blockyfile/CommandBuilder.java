@@ -41,6 +41,24 @@ public record CommandBuilder<S>(
     Argument<S> argument,
     Function<S, Level> getWorld,
     Function<S, CommandFeedback> getFeedbackWrapper) {
+    private static final byte[] byteValues = {
+        0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F,
+        0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18, 0x19, 0x1A, 0x1B, 0x1C, 0x1D, 0x1E, 0x1F,
+        0x20, 0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x27, 0x28, 0x29, 0x2A, 0x2B, 0x2C, 0x2D, 0x2E, 0x2F,
+        0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x39, 0x3A, 0x3B, 0x3C, 0x3D, 0x3E, 0x3F,
+        0x40, 0x41, 0x42, 0x43, 0x44, 0x45, 0x46, 0x47, 0x48, 0x49, 0x4A, 0x4B, 0x4C, 0x4D, 0x4E, 0x4F,
+        0x50, 0x51, 0x52, 0x53, 0x54, 0x55, 0x56, 0x57, 0x58, 0x59, 0x5A, 0x5B, 0x5C, 0x5D, 0x5E, 0x5F,
+        0x60, 0x61, 0x62, 0x63, 0x64, 0x65, 0x66, 0x67, 0x68, 0x69, 0x6A, 0x6B, 0x6C, 0x6D, 0x6E, 0x6F,
+        0x70, 0x71, 0x72, 0x73, 0x74, 0x75, 0x76, 0x77, 0x78, 0x79, 0x7A, 0x7B, 0x7C, 0x7D, 0x7E, 0x7F,
+        0xFFFFFF80, 0xFFFFFF81, 0xFFFFFF82, 0xFFFFFF83, 0xFFFFFF84, 0xFFFFFF85, 0xFFFFFF86, 0xFFFFFF87, 0xFFFFFF88, 0xFFFFFF89, 0xFFFFFF8A, 0xFFFFFF8B, 0xFFFFFF8C, 0xFFFFFF8D, 0xFFFFFF8E, 0xFFFFFF8F,
+        0xFFFFFF90, 0xFFFFFF91, 0xFFFFFF92, 0xFFFFFF93, 0xFFFFFF94, 0xFFFFFF95, 0xFFFFFF96, 0xFFFFFF97, 0xFFFFFF98, 0xFFFFFF99, 0xFFFFFF9A, 0xFFFFFF9B, 0xFFFFFF9C, 0xFFFFFF9D, 0xFFFFFF9E, 0xFFFFFF9F,
+        0xFFFFFFA0, 0xFFFFFFA1, 0xFFFFFFA2, 0xFFFFFFA3, 0xFFFFFFA4, 0xFFFFFFA5, 0xFFFFFFA6, 0xFFFFFFA7, 0xFFFFFFA8, 0xFFFFFFA9, 0xFFFFFFAA, 0xFFFFFFAB, 0xFFFFFFAC, 0xFFFFFFAD, 0xFFFFFFAE, 0xFFFFFFAF,
+        0xFFFFFFB0, 0xFFFFFFB1, 0xFFFFFFB2, 0xFFFFFFB3, 0xFFFFFFB4, 0xFFFFFFB5, 0xFFFFFFB6, 0xFFFFFFB7, 0xFFFFFFB8, 0xFFFFFFB9, 0xFFFFFFBA, 0xFFFFFFBB, 0xFFFFFFBC, 0xFFFFFFBD, 0xFFFFFFBE, 0xFFFFFFBF,
+        0xFFFFFFC0, 0xFFFFFFC1, 0xFFFFFFC2, 0xFFFFFFC3, 0xFFFFFFC4, 0xFFFFFFC5, 0xFFFFFFC6, 0xFFFFFFC7, 0xFFFFFFC8, 0xFFFFFFC9, 0xFFFFFFCA, 0xFFFFFFCB, 0xFFFFFFCC, 0xFFFFFFCD, 0xFFFFFFCE, 0xFFFFFFCF,
+        0xFFFFFFD0, 0xFFFFFFD1, 0xFFFFFFD2, 0xFFFFFFD3, 0xFFFFFFD4, 0xFFFFFFD5, 0xFFFFFFD6, 0xFFFFFFD7, 0xFFFFFFD8, 0xFFFFFFD9, 0xFFFFFFDA, 0xFFFFFFDB, 0xFFFFFFDC, 0xFFFFFFDD, 0xFFFFFFDE, 0xFFFFFFDF,
+        0xFFFFFFE0, 0xFFFFFFE1, 0xFFFFFFE2, 0xFFFFFFE3, 0xFFFFFFE4, 0xFFFFFFE5, 0xFFFFFFE6, 0xFFFFFFE7, 0xFFFFFFE8, 0xFFFFFFE9, 0xFFFFFFEA, 0xFFFFFFEB, 0xFFFFFFEC, 0xFFFFFFED, 0xFFFFFFEE, 0xFFFFFFEF,
+        0xFFFFFFF0, 0xFFFFFFF1, 0xFFFFFFF2, 0xFFFFFFF3, 0xFFFFFFF4, 0xFFFFFFF5, 0xFFFFFFF6, 0xFFFFFFF7, 0xFFFFFFF8, 0xFFFFFFF9, 0xFFFFFFFA, 0xFFFFFFFB, 0xFFFFFFFC, 0xFFFFFFFD, 0xFFFFFFFE, 0xFFFFFFFF
+    };
     private static final Object2IntMap<Block> nonNull = new Object2IntMap<>() {
         @Override
         public int size() {
@@ -109,6 +127,13 @@ public record CommandBuilder<S>(
         feedback.sendFeedback(BlockyFile.translatable_PALETTE_IMPORT_SUCCEED());
     }
 
+    public static void throwIfError() throws CommandSyntaxException {
+        Component lastError = PaletteLoader.getLastError();
+        if (lastError != null) {
+            throw new SimpleCommandExceptionType(lastError).create();
+        }
+    }
+
     public <T> RequiredArgumentBuilder<S, T> argument(String name, ArgumentType<T> type) {
         return argument.argument(name, type);
     }
@@ -154,17 +179,13 @@ public record CommandBuilder<S>(
         LocalPlayer player = Minecraft.getInstance().player;
         switch (context.getArgument("mode", FileOperationMode.class)) {
             case STORE -> {
-                BlockyFileWriter<BlockState> writer = BlockyFile.tryCreateWriter();
-                if (writer == null) {
-                    throw new SimpleCommandExceptionType(BlockyFile.getLastError()).create();
-                }
+                throwIfError();
+                BlockyFileWriter<BlockState> writer = BlockyFile.createWriter();
                 BlockyFile.storeFile(pos1, pos2, axisOrder, file, feedback, player, writer, null, null);
             }
             case LOAD -> {
-                BlockyFileReader<Block> reader = BlockyFile.tryCreateReader();
-                if (reader == null) {
-                    throw new SimpleCommandExceptionType(BlockyFile.getLastError()).create();
-                }
+                throwIfError();
+                BlockyFileReader<Block> reader = BlockyFile.createReader();
                 BlockyFile.loadFile(pos1, pos2, axisOrder, file, feedback, player, reader, null, null);
             }
         }
@@ -173,11 +194,8 @@ public record CommandBuilder<S>(
 
     private int subCommandConfigReload(CommandContext<S> context) throws CommandSyntaxException {
         BlockyFile.loadConfig();
-        Component lastError = BlockyFile.getLastError();
         CommandFeedback feedback = getFeedbackWrapper.apply(context.getSource());
-        if (lastError != null) {
-            throw new SimpleCommandExceptionType(lastError).create();
-        }
+        throwIfError();
         feedback.sendFeedback(BlockyFile.CONFIG_RELOAD_SUCCEED);
         return Command.SINGLE_SUCCESS;
     }
@@ -188,10 +206,7 @@ public record CommandBuilder<S>(
             case IMPORT -> {
                 String clipboard = Minecraft.getInstance().keyboardHandler.getClipboard();
                 BlockyFile.loadPalette(BlockyFile.NEWLINE_PATTERN.splitAsStream(clipboard)::iterator);
-                Component lastError = BlockyFile.getLastError();
-                if (lastError != null) {
-                    throw new SimpleCommandExceptionType(lastError).create();
-                }
+                throwIfError();
                 paletteImportSucceed(feedback);
             }
             case EXPORT -> {
@@ -217,10 +232,7 @@ public record CommandBuilder<S>(
                 } catch (IOException e) {
                     throw new SimpleCommandExceptionType(BlockyFile.exceptionAsComponent(e)).create();
                 }
-                Component lastError = BlockyFile.getLastError();
-                if (lastError != null) {
-                    throw new SimpleCommandExceptionType(lastError).create();
-                }
+                throwIfError();
                 paletteImportSucceed(feedback);
             }
             case EXPORT -> {
@@ -258,7 +270,7 @@ public record CommandBuilder<S>(
                         if (error != null) {
                             feedback1.sendError(error);
                         }
-                        Component lastError = BlockyFile.getLastError();
+                        Component lastError = PaletteLoader.getLastError();
                         if (lastError != null) {
                             feedback.sendError(lastError);
                         } else if (error == null) {
@@ -282,7 +294,7 @@ public record CommandBuilder<S>(
                     BlockState[] temp = BlockyFile.index2block.toArray(new BlockState[256]);
                     writer = new BlockyFileWriter<>(Arrays.asList(temp));
                     // ensure that null values are not accessed
-                    stream = new ByteArrayInputStream(BlockyFile.byteValues, 0, BlockyFile.index2block.size());
+                    stream = new ByteArrayInputStream(byteValues, 0, BlockyFile.index2block.size());
                 }
                 BlockyFile.storeStream(pos1, pos2, axisOrder, stream, feedback, player, writer,
                     null, null,
