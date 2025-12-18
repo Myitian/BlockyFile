@@ -14,8 +14,6 @@ import net.minecraft.world.phys.Vec3;
 import java.nio.file.Path;
 
 public final class PlatformUtilImpl {
-    private static final float PI_180 = (float) (Math.PI / 180);
-
     public static Path getConfigDirectory() {
         return FabricLoader.getInstance().getConfigDir();
     }
@@ -28,12 +26,12 @@ public final class PlatformUtilImpl {
             } else if (coordinates instanceof LocalCoordinates lc) {
                 Vec2 vec2 = s.getRotation();
                 Vec3 vec3 = EntityAnchorArgument.Anchor.FEET.apply(s.getEntity());
-                float a = Mth.cos((vec2.y + 90) * PI_180);
-                float b = Mth.sin((vec2.y + 90) * PI_180);
-                float c = Mth.cos(-vec2.x * PI_180);
-                float d = Mth.sin(-vec2.x * PI_180);
-                float e = Mth.cos((-vec2.x + 90) * PI_180);
-                float f = Mth.sin((-vec2.x + 90) * PI_180);
+                float a = Mth.cos((vec2.y + 90) * Mth.DEG_TO_RAD);
+                float b = Mth.sin((vec2.y + 90) * Mth.DEG_TO_RAD);
+                float c = Mth.cos(-vec2.x * Mth.DEG_TO_RAD);
+                float d = Mth.sin(-vec2.x * Mth.DEG_TO_RAD);
+                float e = Mth.cos((-vec2.x + 90) * Mth.DEG_TO_RAD);
+                float f = Mth.sin((-vec2.x + 90) * Mth.DEG_TO_RAD);
                 Vec3 vec3a = new Vec3(a * c, d, b * c);
                 Vec3 vec3b = new Vec3(a * e, f, b * e);
                 Vec3 vec3c = vec3a.cross(vec3b).scale(-1.0F);

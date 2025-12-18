@@ -6,8 +6,8 @@ In single-player mode, this mod directly manipulates the server world to place a
 
 Supported Minecraft versions:
 
-- Fabric/NeoForge 1.21.4~1.21.11
-- Forge 1.21.6~1.21.11
+- Fabric 1.21.4~1.21.11
+- NeoForge/Forge 1.21.6~1.21.11
 
 ## Commands
 
