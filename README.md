@@ -1,6 +1,7 @@
 # BlockyFile
 
 [![CurseForge Downloads](https://img.shields.io/curseforge/dt/1408303?style=for-the-badge&logo=curseforge&label=CurseForge%20Downloads&color=F16436)](https://www.curseforge.com/minecraft/mc-mods/blocky-file)\
+[![Modrinth Downloads](https://img.shields.io/modrinth/dt/U4NEshfC?style=for-the-badge&logo=modrinth&label=Modrinth%20Downloads&color=00AF5C)](https://modrinth.com/mod/blocky-file)\
 [![MC百科](https://img.shields.io/badge/mcmod.cn-MC%E7%99%BE%E7%A7%91-58b6d8?style=for-the-badge)](https://www.mcmod.cn/class/23823.html)
 
 A client-side mod that uses blocks to store files in the Minecraft world. In-game configuration GUI is supported when Cloth Config is installed.
